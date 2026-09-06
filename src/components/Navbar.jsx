@@ -25,22 +25,9 @@ export default function Navbar({
   onToggleMobileMenu
 }) {
   return (
-    <header className="navbar-container" style={{
-      background: 'rgba(0, 0, 0, 0.95)',
-      backdropFilter: 'blur(20px)',
-      borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-      padding: '12px 20px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      position: 'sticky',
-      top: 0,
-      zIndex: 1000,
-      gap: '12px',
-      flexWrap: 'nowrap'
-    }}>
+    <header className="navbar-container">
       {/* Brand & Hamburger */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="navbar-brand-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flexShrink: 0 }}>
         {/* Mobile Hamburger Button */}
         <button
           onClick={onToggleMobileMenu}
@@ -80,21 +67,22 @@ export default function Navbar({
       </div>
 
       {/* Active Vehicle & Telemetry Summary */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(6px, 1.5vw, 16px)' }}>
+      {/* Active Vehicle & Telemetry Summary */}
+      <div className="navbar-right-cluster" style={{ display: 'flex', alignItems: 'center', gap: 'clamp(4px, 1.2vw, 14px)', minWidth: 0, flexShrink: 1 }}>
         {/* Vehicle Selector Dropdown */}
-        <div style={{
+        <div className="navbar-vehicle-select-container" style={{
           background: 'rgba(255, 255, 255, 0.05)',
           border: '1px solid rgba(255, 255, 255, 0.12)',
           borderRadius: '10px',
-          padding: '5px clamp(6px, 1.2vw, 12px)',
+          padding: '4px clamp(5px, 1vw, 10px)',
           display: 'flex',
           alignItems: 'center',
-          gap: '6px'
+          gap: '5px'
         }}>
           {selectedVehicle.type === 'two-wheeler' ? (
-            <Bike size={16} color="#f59e0b" />
+            <Bike size={15} color="#f59e0b" style={{ flexShrink: 0 }} />
           ) : (
-            <Car size={16} color="#f59e0b" />
+            <Car size={15} color="#f59e0b" style={{ flexShrink: 0 }} />
           )}
           <select 
             value={selectedVehicle.id}
@@ -102,15 +90,17 @@ export default function Navbar({
               const found = vehicles.find(v => v.id === e.target.value);
               if (found) setSelectedVehicle(found);
             }}
+            className="navbar-vehicle-select"
             style={{
               background: 'transparent',
               border: 'none',
               color: '#f8fafc',
-              fontSize: '0.8rem',
+              fontSize: '0.78rem',
               fontWeight: 600,
               cursor: 'pointer',
               outline: 'none',
-              maxWidth: 'clamp(85px, 20vw, 130px)'
+              maxWidth: 'clamp(70px, 18vw, 120px)',
+              textOverflow: 'ellipsis'
             }}
           >
             {vehicles.map(v => (
@@ -166,32 +156,32 @@ export default function Navbar({
 
         {/* Instant Emergency SOS Trigger Button */}
         <button 
-          className="btn btn-emergency pulse-red"
+          className="btn btn-emergency pulse-red navbar-sos-btn"
           onClick={() => triggerEmergency('MANUAL_SOS_BUTTON', 'CRITICAL', 'User Pressed SOS Panic Button')}
-          style={{ padding: '8px 14px', fontSize: '0.82rem', whiteSpace: 'nowrap', flexShrink: 0 }}
+          style={{ padding: '7px 12px', fontSize: '0.8rem', whiteSpace: 'nowrap', flexShrink: 0 }}
           id="btn-emergency-sos-top"
         >
-          <Zap size={15} /> <span className="btn-text-hide-xs">EMERGENCY </span>SOS
+          <Zap size={14} /> <span className="btn-text-hide-xs">EMERGENCY </span>SOS
         </button>
 
         {/* User Profile / Auth Button */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
           <button 
             onClick={openAuthModal}
-            className="btn btn-ghost"
-            style={{ padding: '7px 10px', borderRadius: '8px' }}
+            className="btn btn-ghost navbar-user-btn"
+            style={{ padding: '6px 8px', borderRadius: '8px' }}
             title={currentUser ? currentUser.role : 'Login'}
           >
             <UserCheck size={16} color="#f59e0b" />
-            <span className="btn-text-hide-xs" style={{ fontSize: '0.8rem' }}>{currentUser ? currentUser.role : 'Login'}</span>
+            <span className="btn-text-hide-xs" style={{ fontSize: '0.78rem' }}>{currentUser ? currentUser.role : 'Login'}</span>
           </button>
 
           {currentUser && (
             <button 
               onClick={currentUser.onLogout}
-              className="btn btn-ghost"
+              className="btn btn-ghost navbar-logout-btn"
               title="Logout"
-              style={{ padding: '7px 8px', borderRadius: '8px', color: '#f87171', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+              style={{ padding: '6px 7px', borderRadius: '8px', color: '#f87171', borderColor: 'rgba(239, 68, 68, 0.3)' }}
             >
               <Lock size={14} />
             </button>

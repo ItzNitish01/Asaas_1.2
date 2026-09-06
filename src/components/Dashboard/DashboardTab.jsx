@@ -235,7 +235,7 @@ export default function DashboardTab({
             <span className="badge badge-info">LIVE OBD/GPS</span>
           </div>
           <div style={{ textAlign: 'center', padding: '10px 0' }}>
-            <div style={{ fontSize: 'clamp(2.2rem, 7vw, 3rem)', fontWeight: 800, fontFamily: 'var(--font-mono)', color: '#f8fafc', lineHeight: 1 }}>
+            <div style={{ fontSize: 'clamp(2.2rem, 7vw, 3rem)', fontWeight: 800, fontFamily: 'var(--font-display)', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em', color: '#f8fafc', lineHeight: 1 }}>
               {telemetry.speedKmh.toFixed(1)}
             </div>
             <div style={{ fontSize: '0.85rem', color: '#f59e0b', fontWeight: 600, marginTop: '4px' }}>KM / H</div>
@@ -254,7 +254,7 @@ export default function DashboardTab({
             </span>
           </div>
           <div style={{ textAlign: 'center', padding: '10px 0' }}>
-            <div style={{ fontSize: 'clamp(2.2rem, 7vw, 3rem)', fontWeight: 800, fontFamily: 'var(--font-mono)', color: getGForceColor(telemetry.totalGForce), lineHeight: 1 }}>
+            <div style={{ fontSize: 'clamp(2.2rem, 7vw, 3rem)', fontWeight: 800, fontFamily: 'var(--font-display)', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em', color: getGForceColor(telemetry.totalGForce), lineHeight: 1 }}>
               {telemetry.totalGForce.toFixed(2)}<span style={{ fontSize: '1.4rem' }}>g</span>
             </div>
             <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '4px' }}>
