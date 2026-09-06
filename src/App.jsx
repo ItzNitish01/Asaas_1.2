@@ -40,6 +40,7 @@ export default function App() {
 
   // Auth User State
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState({
     name: 'Alex Mercer',
     email: 'alex.mercer@safedrive.io',
@@ -94,10 +95,60 @@ export default function App() {
         currentUser={currentUserWithLogout}
         openAuthModal={() => setIsAuthOpen(true)}
         expiryAlertCount={expiryAlertCount}
+        onToggleMobileMenu={() => setIsMobileMenuOpen(prev => !prev)}
       />
 
       {/* Hardware Status Strip */}
       <TelemetryBar telemetry={telemetry} />
+
+      {/* Mobile Quick Horizontal Tab Strip (Visible on mobile/tablet < 1024px) */}
+      <nav className="mobile-only touch-scroll-x no-scrollbar" style={{
+        background: 'rgba(10, 15, 26, 0.95)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        padding: '8px 12px',
+        display: 'flex',
+        gap: '8px',
+        alignItems: 'center',
+        position: 'sticky',
+        top: '62px',
+        zIndex: 900
+      }}>
+        {[
+          { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+          { id: 'map', label: 'Incident Map', icon: '🗺️' },
+          { id: 'hospital-map', label: 'Hospital & Police', icon: '🏥' },
+          { id: 'ai-analysis', label: 'AI Analysis', icon: '🧠' },
+          { id: 'vehicles', label: 'Vehicles', icon: '🚗' },
+          { id: 'medical', label: 'Medical', icon: '🩺' },
+          { id: 'contacts', label: 'Contacts', icon: '👥' },
+          { id: 'history', label: 'History', icon: '📜' },
+          { id: 'architecture', label: 'Architecture', icon: '⚡' },
+          { id: 'api-hub', label: 'ESP32 API', icon: '🔌' }
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              padding: '6px 14px',
+              borderRadius: '20px',
+              fontSize: '0.78rem',
+              fontWeight: activeTab === tab.id ? 700 : 500,
+              whiteSpace: 'nowrap',
+              border: activeTab === tab.id ? '1px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.08)',
+              background: activeTab === tab.id ? 'rgba(245, 158, 11, 0.18)' : 'rgba(255, 255, 255, 0.04)',
+              color: activeTab === tab.id ? '#fbbf24' : '#cbd5e1',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              flexShrink: 0
+            }}
+          >
+            <span>{tab.icon}</span>
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </nav>
 
       {/* Main Grid Content */}
       <div className="app-main">
@@ -107,10 +158,12 @@ export default function App() {
           setActiveTab={setActiveTab}
           documentExpiryCount={expiryAlertCount}
           emergencyActive={telemetry.isEmergencyAlert}
+          isMobileOpen={isMobileMenuOpen}
+          onCloseMobile={() => setIsMobileMenuOpen(false)}
         />
 
         {/* Tab Content Rendering */}
-        <main style={{ minHeight: 'calc(100vh - 120px)', overflowY: 'auto' }}>
+        <main className="main-content-viewport">
           {activeTab === 'dashboard' && (
             <DashboardTab 
               selectedVehicle={selectedVehicle}
@@ -130,6 +183,7 @@ export default function App() {
             <AccidentMapTab 
               selectedVehicle={selectedVehicle}
               telemetry={telemetry}
+              updateTelemetry={updateTelemetry}
             />
           )}
 
@@ -139,6 +193,7 @@ export default function App() {
               medicalProfile={medicalProfile}
               telemetry={telemetry}
               triggerEmergency={triggerEmergency}
+              updateTelemetry={updateTelemetry}
             />
           )}
 

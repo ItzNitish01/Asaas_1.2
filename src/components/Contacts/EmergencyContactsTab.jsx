@@ -55,7 +55,7 @@ export default function EmergencyContactsTab({ contacts, setContacts, telemetry,
     `🚨 EMERGENCY ALERT for ${contact.name}! Crash detected on ${selectedVehicle.name} (${selectedVehicle.registrationNumber}). Speed: ${telemetry.speedKmh.toFixed(1)} km/h. Location: ${mapsUrl}`;
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="tab-content-container">
       {/* Header Bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div>
@@ -73,7 +73,7 @@ export default function EmergencyContactsTab({ contacts, setContacts, telemetry,
       </div>
 
       {/* Contacts List Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '20px' }}>
         {contacts.map(c => (
           <div 
             key={c.id} 
@@ -139,7 +139,7 @@ export default function EmergencyContactsTab({ contacts, setContacts, telemetry,
       {/* Add Contact Modal */}
       {showAddModal && (
         <div className="modal-overlay">
-          <div className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '24px' }}>
+          <div className="glass-card modal-content-responsive" style={{ width: 'min(440px, 92vw)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <h3 style={{ fontSize: '1.1rem', color: '#f8fafc', margin: 0 }}>Add Emergency Contact</h3>
               <button onClick={() => setShowAddModal(false)} style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={20} /></button>

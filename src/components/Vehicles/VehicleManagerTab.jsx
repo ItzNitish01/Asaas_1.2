@@ -137,7 +137,7 @@ export default function VehicleManagerTab({ vehicles, setVehicles, selectedVehic
   };
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="tab-content-container">
       {/* Header Bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div>
@@ -408,8 +408,8 @@ export default function VehicleManagerTab({ vehicles, setVehicles, selectedVehic
         </div>
 
         {/* Documents Table */}
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+        <div className="touch-scroll-x no-scrollbar" style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', minWidth: '560px', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', textAlign: 'left' }}>
                 <th style={{ padding: '12px' }}>DOCUMENT NAME</th>
@@ -451,7 +451,7 @@ export default function VehicleManagerTab({ vehicles, setVehicles, selectedVehic
       {/* Add Document Modal */}
       {showAddDocModal && (
         <div className="modal-overlay">
-          <div className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '24px' }}>
+          <div className="glass-card modal-content-responsive" style={{ width: 'min(440px, 92vw)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <h3 style={{ fontSize: '1.1rem', color: '#f8fafc', margin: 0 }}>Add Document for {selectedVehicle.name}</h3>
               <button onClick={() => setShowAddDocModal(false)} style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={20} /></button>

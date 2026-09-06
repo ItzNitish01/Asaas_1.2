@@ -135,7 +135,7 @@ void sendTelemetryPayload(float total_g, float ax, float ay, float az) {
   };
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="tab-content-container">
       {/* Header */}
       <div>
         <h2 style={{ fontSize: '1.4rem', color: '#f8fafc', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -210,18 +210,22 @@ void sendTelemetryPayload(float total_g, float ax, float ay, float az) {
           </button>
         </div>
 
-        <pre style={{
-          background: 'var(--bg-dark)',
-          padding: '16px',
-          borderRadius: '12px',
-          border: '1px solid rgba(255,255,255,0.08)',
-          color: '#e2e8f0',
-          fontFamily: 'var(--font-mono)',
-          fontSize: '0.78rem',
-          maxHeight: '340px',
-          overflowY: 'auto',
-          lineHeight: 1.5
-        }}>
+        <pre 
+          className="touch-scroll-x"
+          style={{
+            background: 'var(--bg-dark)',
+            padding: '16px',
+            borderRadius: '12px',
+            border: '1px solid rgba(255,255,255,0.08)',
+            color: '#e2e8f0',
+            fontFamily: 'var(--font-mono)',
+            fontSize: '0.78rem',
+            maxHeight: '340px',
+            overflowY: 'auto',
+            overflowX: 'auto',
+            lineHeight: 1.5
+          }}
+        >
           {cppArduinoSketch}
         </pre>
       </div>

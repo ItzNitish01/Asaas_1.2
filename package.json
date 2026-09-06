@@ -1,5 +1,6 @@
 {
-  "name": "safedrive-iot-accident-detection",
+  "name": "asaas-accident-alert-safety",
+  "description": "Automated System for Accident Alert & Safety (ASAAS) - Real-time IoT Emergency Dispatch & Telemetry",
   "private": true,
   "version": "1.0.0",
   "type": "module",

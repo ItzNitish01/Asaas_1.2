@@ -34,7 +34,7 @@ export default function AccidentHistoryTab() {
   };
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="tab-content-container">
       {/* Header Bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div>
@@ -88,7 +88,7 @@ export default function AccidentHistoryTab() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', fontSize: '0.82rem', marginBottom: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: '12px', fontSize: '0.82rem', marginBottom: '12px' }}>
               <div>
                 <span style={{ color: '#94a3b8' }}>VEHICLE</span>
                 <div style={{ fontWeight: 600, color: '#cbd5e1' }}>{inc.vehicleName} ({inc.registrationNumber})</div>

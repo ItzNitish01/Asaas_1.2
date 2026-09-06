@@ -25,7 +25,7 @@ export default function ArchitectureTab() {
   const [selectedNode, setSelectedNode] = useState('hardware');
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="tab-content-container">
       {/* Header */}
       <div>
         <h2 style={{ fontSize: '1.4rem', color: '#f8fafc', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>

@@ -26,6 +26,7 @@ db.sqlite3
 db.sqlite3-journal
 media/
 staticfiles/
+_archive_legacy_bookmyseat/
 
 # IDE & OS files
 .vscode/
@@ -39,4 +40,6 @@ staticfiles/
 Thumbs.db
 .vercel
 
-.vercel
+# Binaries
+*.exe
+cloudflared.exe

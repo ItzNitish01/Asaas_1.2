@@ -9,7 +9,8 @@ import {
   AlertTriangle, 
   UserCheck, 
   Lock,
-  Zap
+  Zap,
+  Menu
 } from 'lucide-react';
 
 export default function Navbar({ 
@@ -20,40 +21,61 @@ export default function Navbar({
   triggerEmergency, 
   currentUser, 
   openAuthModal,
-  expiryAlertCount
+  expiryAlertCount,
+  onToggleMobileMenu
 }) {
   return (
     <header className="navbar-container" style={{
       background: 'rgba(0, 0, 0, 0.95)',
       backdropFilter: 'blur(20px)',
       borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-      padding: '12px 24px',
+      padding: '12px 20px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       position: 'sticky',
       top: 0,
-      zIndex: 1000
+      zIndex: 1000,
+      gap: '12px',
+      flexWrap: 'nowrap'
     }}>
-      {/* Brand & Logo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      {/* Brand & Hamburger */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {/* Mobile Hamburger Button */}
+        <button
+          onClick={onToggleMobileMenu}
+          className="mobile-nav-toggle btn btn-ghost"
+          style={{
+            padding: '8px',
+            borderRadius: '8px',
+            display: 'none',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderColor: 'rgba(255, 255, 255, 0.12)'
+          }}
+          aria-label="Toggle Navigation Menu"
+        >
+          <Menu size={20} color="#f8fafc" />
+        </button>
+
         <div style={{
-          width: '42px',
-          height: '42px',
-          borderRadius: '12px',
+          width: '38px',
+          height: '38px',
+          borderRadius: '10px',
           background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 0 20px rgba(239, 68, 68, 0.4)'
+          boxShadow: '0 0 16px rgba(239, 68, 68, 0.4)',
+          flexShrink: 0
         }}>
-          <ShieldAlert size={24} color="#fff" />
+          <ShieldAlert size={22} color="#fff" />
         </div>
         <div>
-          <h1 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-            ASAAS <span style={{ color: '#f59e0b', fontSize: '0.8rem', fontWeight: 600, padding: '2px 8px', borderRadius: '6px', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>SYSTEM OS</span>
+          <h1 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, lineHeight: 1.1 }}>
+            ASAAS <span style={{ color: '#f59e0b', fontSize: '0.74rem', fontWeight: 700, padding: '2px 6px', borderRadius: '5px', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>OS</span>
           </h1>
-          <p style={{ fontSize: '0.74rem', color: '#94a3b8', margin: 0 }}>Automated System for Accident Alert & Safety</p>
+          <p className="navbar-brand-subtitle" style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '2px 0 0 0' }}>Automated System for Accident Alert & Safety</p>
         </div>
       </div>
 
@@ -84,22 +106,23 @@ export default function Navbar({
               background: 'transparent',
               border: 'none',
               color: '#f8fafc',
-              fontSize: '0.85rem',
+              fontSize: '0.82rem',
               fontWeight: 600,
               cursor: 'pointer',
-              outline: 'none'
+              outline: 'none',
+              maxWidth: '130px'
             }}
           >
             {vehicles.map(v => (
               <option key={v.id} value={v.id} style={{ background: '#0d0d0d', color: '#fff' }}>
-                {v.name} ({v.registrationNumber})
+                {v.name}
               </option>
             ))}
           </select>
         </div>
 
         {/* Quick Hardware Status Indicator */}
-        <div style={{
+        <div className="navbar-hw-stats" style={{
           display: 'flex',
           alignItems: 'center',
           gap: '12px',
@@ -125,7 +148,7 @@ export default function Navbar({
 
         {/* Expiry Alerts Badge Counter if any */}
         {expiryAlertCount > 0 && (
-          <div style={{
+          <div className="navbar-hw-stats" style={{
             background: 'rgba(245, 158, 11, 0.15)',
             border: '1px solid rgba(245, 158, 11, 0.3)',
             borderRadius: '20px',
@@ -137,7 +160,7 @@ export default function Navbar({
             gap: '6px',
             fontWeight: 600
           }}>
-            <AlertTriangle size={14} /> {expiryAlertCount} Document Alert{expiryAlertCount > 1 ? 's' : ''}
+            <AlertTriangle size={14} /> {expiryAlertCount} Alert{expiryAlertCount > 1 ? 's' : ''}
           </div>
         )}
 
@@ -145,32 +168,32 @@ export default function Navbar({
         <button 
           className="btn btn-emergency pulse-red"
           onClick={() => triggerEmergency('MANUAL_SOS_BUTTON', 'CRITICAL', 'User Pressed SOS Panic Button')}
-          style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+          style={{ padding: '8px 14px', fontSize: '0.82rem', whiteSpace: 'nowrap', flexShrink: 0 }}
           id="btn-emergency-sos-top"
         >
-          <Zap size={16} /> EMERGENCY SOS
+          <Zap size={15} /> <span className="btn-text-hide-xs">EMERGENCY </span>SOS
         </button>
 
         {/* User Profile / Auth Button */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
           <button 
             onClick={openAuthModal}
             className="btn btn-ghost"
-            style={{ padding: '8px 12px', borderRadius: '10px' }}
+            style={{ padding: '7px 10px', borderRadius: '8px' }}
+            title={currentUser ? currentUser.role : 'Login'}
           >
             <UserCheck size={16} color="#f59e0b" />
-            <span style={{ fontSize: '0.82rem' }}>{currentUser ? currentUser.role : 'Login'}</span>
+            <span className="btn-text-hide-xs" style={{ fontSize: '0.8rem' }}>{currentUser ? currentUser.role : 'Login'}</span>
           </button>
 
           {currentUser && (
             <button 
               onClick={currentUser.onLogout}
               className="btn btn-ghost"
-              title="Logout to Login Screen"
-              style={{ padding: '8px 10px', borderRadius: '10px', color: '#f87171', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+              title="Logout"
+              style={{ padding: '7px 8px', borderRadius: '8px', color: '#f87171', borderColor: 'rgba(239, 68, 68, 0.3)' }}
             >
               <Lock size={14} />
-              <span style={{ fontSize: '0.78rem' }}>Logout</span>
             </button>
           )}
         </div>

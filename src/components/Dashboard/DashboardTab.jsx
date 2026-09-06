@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import VehicleInfoForm from '../Forms/VehicleInfoForm';
 import MedicalInfoForm from '../Forms/MedicalInfoForm';
+import { findNearestEmergencyServices, locationPresets } from '../../services/geoService';
 
 export default function DashboardTab({ 
   selectedVehicle, 
@@ -47,6 +48,12 @@ export default function DashboardTab({
   setActiveTab 
 }) {
   const [selectedFormMode, setSelectedFormMode] = useState('none'); // 'vehicle' | 'medical' | 'both' | 'none'
+
+  // Dynamically calculate nearest hospital and police station from live GPS
+  const { nearestHospital, nearestPolice } = findNearestEmergencyServices(
+    telemetry.lat,
+    telemetry.lng
+  );
 
   // Preset Telemetry Simulation Triggers
   const triggerNormalDriving = () => {
@@ -123,7 +130,7 @@ export default function DashboardTab({
   };
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="tab-content-container">
       {/* OFFICIAL ASAAS DEVICE STATUS MONITORING BANNER */}
       {!telemetry.isEmergencyAlert ? (
         <div className="glass-card" style={{
@@ -141,22 +148,26 @@ export default function DashboardTab({
             <span className="badge badge-success">NORMAL CONDITION - VEHICLE RUNNING</span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', fontSize: '0.82rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px', fontSize: '0.8rem' }}>
             <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '10px' }}>
               <span style={{ color: '#94a3b8' }}>SYSTEM CORE</span>
               <div style={{ color: '#34d399', fontWeight: 700 }}>ONLINE ✓</div>
             </div>
             <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '10px' }}>
               <span style={{ color: '#94a3b8' }}>GPS MODULE</span>
-              <div style={{ color: '#34d399', fontWeight: 700 }}>ACTIVE ✓ ({telemetry.gpsSatellites} Sats)</div>
+              <div style={{ color: '#34d399', fontWeight: 700 }}>ACTIVE ✓ ({telemetry.gpsSatellites || 12} Sats)</div>
             </div>
             <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '10px' }}>
-              <span style={{ color: '#94a3b8' }}>COLLISION SENSORS</span>
-              <div style={{ color: '#34d399', fontWeight: 700 }}>ACTIVE ✓ (MPU6050)</div>
+              <span style={{ color: '#94a3b8' }}>CLOSEST HOSPITAL</span>
+              <div style={{ color: '#34d399', fontWeight: 700, fontSize: '0.76rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={nearestHospital?.name}>
+                🏥 {nearestHospital?.name?.split(' ')[0]} ({nearestHospital?.distance})
+              </div>
             </div>
             <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '10px' }}>
-              <span style={{ color: '#94a3b8' }}>COMMUNICATION</span>
-              <div style={{ color: '#34d399', fontWeight: 700 }}>ACTIVE ✓ (GSM/SIM800L)</div>
+              <span style={{ color: '#94a3b8' }}>CLOSEST POLICE</span>
+              <div style={{ color: '#60a5fa', fontWeight: 700, fontSize: '0.76rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={nearestPolice?.name}>
+                👮 {nearestPolice?.name?.split(' ')[0]} ({nearestPolice?.distance})
+              </div>
             </div>
             <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '10px' }}>
               <span style={{ color: '#94a3b8' }}>VEHICLE STATE</span>
@@ -186,19 +197,23 @@ export default function DashboardTab({
           </p>
 
           {/* Sequential Dispatch Status */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', fontSize: '0.82rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', fontSize: '0.82rem' }}>
             <div style={{ background: 'rgba(0,0,0,0.4)', padding: '12px', borderRadius: '10px', border: '1px solid #10b981' }}>
               <div style={{ color: '#34d399', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Building2 size={14} /> 🏥 HOSPITAL (1ST)
               </div>
-              <div style={{ color: '#fff', fontWeight: 800, marginTop: '4px' }}>✓ ALERT SENT</div>
+              <div style={{ color: '#fff', fontWeight: 800, marginTop: '4px' }}>
+                ✓ {nearestHospital?.name} ({nearestHospital?.distance})
+              </div>
             </div>
 
-            <div style={{ background: 'rgba(0,0,0,0.4)', padding: '12px', borderRadius: '10px', border: '1px solid #f59e0b' }}>
-              <div style={{ color: '#f59e0b', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ background: 'rgba(0,0,0,0.4)', padding: '12px', borderRadius: '10px', border: '1px solid #3b82f6' }}>
+              <div style={{ color: '#60a5fa', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <ShieldAlert size={14} /> 👮 POLICE (2ND)
               </div>
-              <div style={{ color: '#fff', fontWeight: 800, marginTop: '4px' }}>✓ ALERT DELIVERED</div>
+              <div style={{ color: '#fff', fontWeight: 800, marginTop: '4px' }}>
+                ✓ {nearestPolice?.name} ({nearestPolice?.distance})
+              </div>
             </div>
 
             <div style={{ background: 'rgba(0,0,0,0.4)', padding: '12px', borderRadius: '10px', border: '1px solid #a855f7' }}>
@@ -276,21 +291,30 @@ export default function DashboardTab({
           </div>
         </div>
 
-        {/* GPS Coordinates Quick Card */}
+        {/* GPS Coordinates & Nearest Responders Quick Card */}
         <div className="glass-card" style={{ padding: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#94a3b8', fontSize: '0.8rem', fontWeight: 600, marginBottom: '12px' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={16} color="#10b981" /> GPS LIVE LOCATION</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#94a3b8', fontSize: '0.8rem', fontWeight: 600, marginBottom: '10px' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={16} color="#10b981" /> GPS & NEAREST HUBS</span>
             <button onClick={() => setActiveTab('map')} className="btn btn-ghost" style={{ padding: '2px 8px', fontSize: '0.7rem' }}>View Map</button>
           </div>
-          <div style={{ fontSize: '0.9rem', color: '#f8fafc', fontWeight: 600, marginBottom: '6px' }}>
-            NH-48 Expressway, KM 34
+          <div style={{ fontSize: '0.78rem', color: '#94a3b8', fontFamily: 'var(--font-mono)', marginBottom: '8px' }}>
+            {telemetry.lat.toFixed(4)}°N, {telemetry.lng.toFixed(4)}°E &bull; <span style={{ color: '#10b981' }}>{telemetry.gpsSatellites || 12} Sats</span>
           </div>
-          <div style={{ fontSize: '0.78rem', color: '#94a3b8', fontFamily: 'var(--font-mono)' }}>
-            LAT: {telemetry.lat.toFixed(5)} N<br />
-            LNG: {telemetry.lng.toFixed(5)} E
-          </div>
-          <div style={{ fontSize: '0.72rem', color: '#10b981', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <ShieldCheck size={12} /> 3D Sat-Lock ({telemetry.gpsSatellites} Satellites)
+
+          {/* Quick facilities proximity links */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '0.74rem', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ color: '#cbd5e1', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '170px' }}>
+                🏥 {nearestHospital?.name}
+              </span>
+              <span className="mono" style={{ color: '#34d399', fontWeight: 700 }}>{nearestHospital?.distance}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ color: '#cbd5e1', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '170px' }}>
+                👮 {nearestPolice?.name}
+              </span>
+              <span className="mono" style={{ color: '#60a5fa', fontWeight: 700 }}>{nearestPolice?.distance}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -414,9 +438,50 @@ export default function DashboardTab({
         )}
       </div>
 
+      {/* GPS Location Presets Switcher Bar */}
+      <div 
+        className="touch-scroll-x no-scrollbar"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          background: 'rgba(15, 23, 42, 0.6)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+          borderRadius: '10px',
+          padding: '8px 12px',
+          overflowX: 'auto'
+        }}
+      >
+        <span style={{ fontSize: '0.74rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <Compass size={13} color="#f59e0b" /> Simulate Location:
+        </span>
+        {locationPresets.map(preset => {
+          const isSelected = Math.abs(telemetry.lat - preset.lat) < 0.005 && Math.abs(telemetry.lng - preset.lng) < 0.005;
+          return (
+            <button
+              key={preset.id}
+              onClick={() => updateTelemetry({ lat: preset.lat, lng: preset.lng })}
+              style={{
+                background: isSelected ? 'rgba(245, 158, 11, 0.18)' : 'rgba(255, 255, 255, 0.03)',
+                border: isSelected ? '1px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.07)',
+                color: isSelected ? '#fbbf24' : '#cbd5e1',
+                padding: '4px 10px',
+                borderRadius: '6px',
+                fontSize: '0.74rem',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                fontWeight: isSelected ? 700 : 500
+              }}
+            >
+              {preset.label}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Simulator Control Deck */}
       <div className="glass-card" style={{ padding: '20px', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
           <div>
             <h3 style={{ fontSize: '1.1rem', color: '#f8fafc', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Sliders size={20} color="#f59e0b" /> Live ASAAS Collision Simulator
@@ -429,7 +494,7 @@ export default function DashboardTab({
         </div>
 
         {/* Simulator Buttons */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '12px' }}>
           <button onClick={triggerNormalDriving} className="btn btn-ghost" style={{ justifyContent: 'flex-start', padding: '12px' }}>
             <Car size={18} color="#10b981" />
             <div style={{ textAlign: 'left' }}>
@@ -465,7 +530,7 @@ export default function DashboardTab({
       </div>
 
       {/* Direct Shortcuts Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '20px' }}>
         <div className="glass-card" style={{ padding: '20px' }}>
           <h4 style={{ fontSize: '0.95rem', color: '#f8fafc', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Flame size={18} color="#ef4444" /> Manual Emergency SOS Protocol
