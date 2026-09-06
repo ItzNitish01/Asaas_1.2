@@ -264,6 +264,7 @@ export default function App() {
         onClose={() => setIsAuthOpen(false)}
         currentUser={currentUser}
         setCurrentUser={setCurrentUser}
+        onLogout={handleLogout}
       />
 
       {/* Native Mobile Bottom Navigation Bar (< 769px) */}
