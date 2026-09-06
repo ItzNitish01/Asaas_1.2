@@ -59,16 +59,10 @@ export default function LoginPage({ onLoginSuccess }) {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '24px'
+      padding: 'clamp(14px, 4vw, 24px)',
+      boxSizing: 'border-box'
     }}>
-      <div style={{
-        width: '100%',
-        maxWidth: '920px',
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '36px',
-        alignItems: 'center'
-      }}>
+      <div className="login-grid-split">
         {/* Left Side: ASAAS Info & Quick Demo Roles */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>

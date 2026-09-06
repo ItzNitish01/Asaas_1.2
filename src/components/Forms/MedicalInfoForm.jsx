@@ -138,7 +138,7 @@ export default function MedicalInfoForm({ medicalProfile, setMedicalProfile, onC
             <UserCheck size={18} /> 1. Patient Personal Bio & Emergency Vitals
           </h3>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '16px' }}>
             <div>
               <label style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'block', marginBottom: '6px', fontWeight: 600 }}>FULL NAME *</label>
               <input 
@@ -221,7 +221,7 @@ export default function MedicalInfoForm({ medicalProfile, setMedicalProfile, onC
             <ShieldAlert size={18} /> 2. Critical Allergies & Chronic Medical Conditions
           </h3>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '16px' }}>
             <div>
               <label style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'block', marginBottom: '6px', fontWeight: 600 }}>SEVERE DRUG & FOOD ALLERGIES (COMMA SEPARATED)</label>
               <input 
@@ -265,7 +265,7 @@ export default function MedicalInfoForm({ medicalProfile, setMedicalProfile, onC
             <Pill size={18} /> 3. Active Daily Medications & Prescriptions
           </h3>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '16px' }}>
             <div>
               <label style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'block', marginBottom: '6px', fontWeight: 600 }}>PRIMARY MEDICATION NAME & DOSAGE</label>
               <input 
@@ -320,7 +320,7 @@ export default function MedicalInfoForm({ medicalProfile, setMedicalProfile, onC
             <Stethoscope size={18} /> 4. Primary Physician & Health Insurance Policy
           </h3>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '16px' }}>
             <div>
               <label style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'block', marginBottom: '6px', fontWeight: 600 }}>PRIMARY PHYSICIAN / DOCTOR NAME</label>
               <input 

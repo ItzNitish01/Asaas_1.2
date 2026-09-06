@@ -148,7 +148,7 @@ export default function DashboardTab({
             <span className="badge badge-success">NORMAL CONDITION - VEHICLE RUNNING</span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px', fontSize: '0.8rem' }}>
+          <div className="device-status-grid">
             <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '10px' }}>
               <span style={{ color: '#94a3b8' }}>SYSTEM CORE</span>
               <div style={{ color: '#34d399', fontWeight: 700 }}>ONLINE ✓</div>
@@ -235,7 +235,7 @@ export default function DashboardTab({
             <span className="badge badge-info">LIVE OBD/GPS</span>
           </div>
           <div style={{ textAlign: 'center', padding: '10px 0' }}>
-            <div style={{ fontSize: '3rem', fontWeight: 800, fontFamily: 'var(--font-mono)', color: '#f8fafc', lineHeight: 1 }}>
+            <div style={{ fontSize: 'clamp(2.2rem, 7vw, 3rem)', fontWeight: 800, fontFamily: 'var(--font-mono)', color: '#f8fafc', lineHeight: 1 }}>
               {telemetry.speedKmh.toFixed(1)}
             </div>
             <div style={{ fontSize: '0.85rem', color: '#f59e0b', fontWeight: 600, marginTop: '4px' }}>KM / H</div>
@@ -254,7 +254,7 @@ export default function DashboardTab({
             </span>
           </div>
           <div style={{ textAlign: 'center', padding: '10px 0' }}>
-            <div style={{ fontSize: '3rem', fontWeight: 800, fontFamily: 'var(--font-mono)', color: getGForceColor(telemetry.totalGForce), lineHeight: 1 }}>
+            <div style={{ fontSize: 'clamp(2.2rem, 7vw, 3rem)', fontWeight: 800, fontFamily: 'var(--font-mono)', color: getGForceColor(telemetry.totalGForce), lineHeight: 1 }}>
               {telemetry.totalGForce.toFixed(2)}<span style={{ fontSize: '1.4rem' }}>g</span>
             </div>
             <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '4px' }}>
@@ -332,20 +332,23 @@ export default function DashboardTab({
           </div>
 
           {/* Form Selector Dropdown Control */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', maxWidth: '100%' }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
               background: 'rgba(12, 12, 12, 0.95)',
               border: '1px solid rgba(245, 158, 11, 0.35)',
               borderRadius: '12px',
-              padding: '8px 14px',
-              gap: '10px',
+              padding: '8px 12px',
+              gap: '8px',
               boxShadow: '0 4px 16px rgba(245, 158, 11, 0.15)',
-              backdropFilter: 'blur(12px)'
+              backdropFilter: 'blur(12px)',
+              width: '100%',
+              maxWidth: '480px',
+              boxSizing: 'border-box'
             }}>
-              <Sliders size={18} color="#f59e0b" />
-              <span style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase' }}>Select Form:</span>
+              <Sliders size={18} color="#f59e0b" style={{ flexShrink: 0 }} />
+              <span style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', whiteSpace: 'nowrap', flexShrink: 0 }}>Form:</span>
               <select
                 value={selectedFormMode}
                 onChange={(e) => setSelectedFormMode(e.target.value)}
@@ -353,11 +356,12 @@ export default function DashboardTab({
                   background: 'transparent',
                   border: 'none',
                   color: selectedFormMode === 'vehicle' ? '#f59e0b' : selectedFormMode === 'medical' ? '#f87171' : selectedFormMode === 'both' ? '#c084fc' : '#94a3b8',
-                  fontSize: '0.88rem',
+                  fontSize: '0.85rem',
                   fontWeight: 700,
                   outline: 'none',
                   cursor: 'pointer',
-                  paddingRight: '8px'
+                  width: '100%',
+                  textOverflow: 'ellipsis'
                 }}
               >
                 <option value="vehicle" style={{ background: '#0a0a0a', color: '#f59e0b' }}>🚗 Vehicle Purpose Form</option>
@@ -365,7 +369,7 @@ export default function DashboardTab({
                 <option value="both" style={{ background: '#0a0a0a', color: '#c084fc' }}>📋 Show Both Forms (Side-by-Side)</option>
                 <option value="none" style={{ background: '#0a0a0a', color: '#94a3b8' }}>🙈 Hide / Collapse All Forms</option>
               </select>
-              <ChevronDown size={16} color="#94a3b8" />
+              <ChevronDown size={16} color="#94a3b8" style={{ flexShrink: 0 }} />
             </div>
           </div>
         </div>
@@ -396,7 +400,7 @@ export default function DashboardTab({
 
         {/* Render Collapsed Quick Access Cards when 'none' is selected */}
         {selectedFormMode === 'none' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '16px' }}>
             {/* Vehicle Form Choice Card */}
             <div className="glass-card" style={{ padding: '22px', border: '1px solid rgba(245, 158, 11, 0.3)', background: 'linear-gradient(135deg, rgba(12, 12, 12, 0.95) 0%, rgba(245, 158, 11, 0.05) 100%)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>

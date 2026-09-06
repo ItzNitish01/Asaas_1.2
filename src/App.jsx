@@ -17,6 +17,7 @@ import AuthModal from './components/Auth/AuthModal';
 import LoginPage from './components/Auth/LoginPage';
 import VehicleInfoForm from './components/Forms/VehicleInfoForm';
 import MedicalInfoForm from './components/Forms/MedicalInfoForm';
+import MobileBottomNav from './components/MobileBottomNav';
 
 import { 
   initialVehicles, 
@@ -101,8 +102,8 @@ export default function App() {
       {/* Hardware Status Strip */}
       <TelemetryBar telemetry={telemetry} />
 
-      {/* Mobile Quick Horizontal Tab Strip (Visible on mobile/tablet < 1024px) */}
-      <nav className="mobile-only touch-scroll-x no-scrollbar" style={{
+      {/* Tablet Quick Horizontal Tab Strip (Visible on tablet 769px - 1024px) */}
+      <nav className="tablet-nav-strip touch-scroll-x no-scrollbar" style={{
         background: 'rgba(10, 15, 26, 0.95)',
         borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
         padding: '8px 12px',
@@ -263,6 +264,14 @@ export default function App() {
         onClose={() => setIsAuthOpen(false)}
         currentUser={currentUser}
         setCurrentUser={setCurrentUser}
+      />
+
+      {/* Native Mobile Bottom Navigation Bar (< 769px) */}
+      <MobileBottomNav 
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onOpenMenu={() => setIsMobileMenuOpen(true)}
+        emergencyActive={telemetry.isEmergencyAlert}
       />
     </div>
   );

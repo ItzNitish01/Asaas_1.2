@@ -59,8 +59,8 @@ export default function Navbar({
         </button>
 
         <div style={{
-          width: '38px',
-          height: '38px',
+          width: 'clamp(32px, 4vw, 38px)',
+          height: 'clamp(32px, 4vw, 38px)',
           borderRadius: '10px',
           background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
           display: 'flex',
@@ -69,32 +69,32 @@ export default function Navbar({
           boxShadow: '0 0 16px rgba(239, 68, 68, 0.4)',
           flexShrink: 0
         }}>
-          <ShieldAlert size={22} color="#fff" />
+          <ShieldAlert size={20} color="#fff" />
         </div>
         <div>
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, lineHeight: 1.1 }}>
-            ASAAS <span style={{ color: '#f59e0b', fontSize: '0.74rem', fontWeight: 700, padding: '2px 6px', borderRadius: '5px', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>OS</span>
+          <h1 style={{ fontSize: 'clamp(1.05rem, 3.5vw, 1.25rem)', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, lineHeight: 1.1 }}>
+            ASAAS <span style={{ color: '#f59e0b', fontSize: '0.72rem', fontWeight: 700, padding: '2px 5px', borderRadius: '5px', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>OS</span>
           </h1>
           <p className="navbar-brand-subtitle" style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '2px 0 0 0' }}>Automated System for Accident Alert & Safety</p>
         </div>
       </div>
 
       {/* Active Vehicle & Telemetry Summary */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(6px, 1.5vw, 16px)' }}>
         {/* Vehicle Selector Dropdown */}
         <div style={{
           background: 'rgba(255, 255, 255, 0.05)',
           border: '1px solid rgba(255, 255, 255, 0.12)',
           borderRadius: '10px',
-          padding: '6px 12px',
+          padding: '5px clamp(6px, 1.2vw, 12px)',
           display: 'flex',
           alignItems: 'center',
-          gap: '10px'
+          gap: '6px'
         }}>
           {selectedVehicle.type === 'two-wheeler' ? (
-            <Bike size={18} color="#f59e0b" />
+            <Bike size={16} color="#f59e0b" />
           ) : (
-            <Car size={18} color="#f59e0b" />
+            <Car size={16} color="#f59e0b" />
           )}
           <select 
             value={selectedVehicle.id}
@@ -106,11 +106,11 @@ export default function Navbar({
               background: 'transparent',
               border: 'none',
               color: '#f8fafc',
-              fontSize: '0.82rem',
+              fontSize: '0.8rem',
               fontWeight: 600,
               cursor: 'pointer',
               outline: 'none',
-              maxWidth: '130px'
+              maxWidth: 'clamp(85px, 20vw, 130px)'
             }}
           >
             {vehicles.map(v => (

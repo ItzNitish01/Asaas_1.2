@@ -175,7 +175,7 @@ export default function AccidentMapTab({ selectedVehicle, telemetry, updateTelem
   const routeThemeColor = isHospitalTarget ? '#10b981' : '#3b82f6';
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className="tab-content-container">
       
       {/* Header Info */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
@@ -185,7 +185,7 @@ export default function AccidentMapTab({ selectedVehicle, telemetry, updateTelem
               <MapPin size={22} color="#ef4444" />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.3rem', color: '#f8fafc', margin: 0, fontWeight: 800 }}>
+              <h2 style={{ fontSize: 'clamp(1.1rem, 3.5vw, 1.35rem)', color: '#f8fafc', margin: 0, fontWeight: 800 }}>
                 Live GPS & Nearest Emergency Responder Detection
               </h2>
               <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: '2px 0 0 0' }}>
@@ -224,16 +224,19 @@ export default function AccidentMapTab({ selectedVehicle, telemetry, updateTelem
       </div>
 
       {/* GPS Location Presets Switcher Bar */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        background: 'rgba(15, 23, 42, 0.6)',
-        border: '1px solid rgba(255, 255, 255, 0.06)',
-        borderRadius: '10px',
-        padding: '8px 12px',
-        overflowX: 'auto'
-      }}>
+      <div 
+        className="touch-scroll-x no-scrollbar"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          background: 'rgba(15, 23, 42, 0.6)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+          borderRadius: '10px',
+          padding: '8px 12px',
+          overflowX: 'auto'
+        }}
+      >
         <span style={{ fontSize: '0.74rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '5px' }}>
           <Compass size={13} color="#f59e0b" /> Test Location:
         </span>
@@ -263,7 +266,7 @@ export default function AccidentMapTab({ selectedVehicle, telemetry, updateTelem
       </div>
 
       {/* DEDICATED IMMEDIATE NEAREST RESPONDERS DUAL CARD (HOSPITAL + POLICE) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '14px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '14px' }}>
         {/* Nearest Hospital Card */}
         <div 
           onClick={() => setRouteTarget(nearestHospital)}
@@ -415,7 +418,7 @@ export default function AccidentMapTab({ selectedVehicle, telemetry, updateTelem
           background: 'rgba(10, 15, 26, 0.95)'
         }}>
           {/* Facility Filter Pills */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div className="touch-scroll-x no-scrollbar" style={{ display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', maxWidth: '100%', paddingBottom: '2px' }}>
             <button
               onClick={() => setFilterType('all')}
               style={{
@@ -426,7 +429,8 @@ export default function AccidentMapTab({ selectedVehicle, telemetry, updateTelem
                 borderRadius: '6px',
                 fontSize: '0.76rem',
                 fontWeight: 600,
-                cursor: 'pointer'
+                cursor: 'pointer',
+                whiteSpace: 'nowrap'
               }}
             >
               All Responders ({allSorted.length})
@@ -441,7 +445,8 @@ export default function AccidentMapTab({ selectedVehicle, telemetry, updateTelem
                 borderRadius: '6px',
                 fontSize: '0.76rem',
                 fontWeight: 600,
-                cursor: 'pointer'
+                cursor: 'pointer',
+                whiteSpace: 'nowrap'
               }}
             >
               🏥 Hospitals ({hospitals.length})
@@ -456,7 +461,8 @@ export default function AccidentMapTab({ selectedVehicle, telemetry, updateTelem
                 borderRadius: '6px',
                 fontSize: '0.76rem',
                 fontWeight: 600,
-                cursor: 'pointer'
+                cursor: 'pointer',
+                whiteSpace: 'nowrap'
               }}
             >
               👮 Police Stations ({policeStations.length})
@@ -464,8 +470,8 @@ export default function AccidentMapTab({ selectedVehicle, telemetry, updateTelem
           </div>
 
           {/* Quick Route Switcher on Toolbar */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600 }}>Active Route:</span>
+          <div className="touch-scroll-x no-scrollbar" style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', maxWidth: '100%', paddingBottom: '2px' }}>
+            <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, whiteSpace: 'nowrap' }}>Active Route:</span>
             <button
               onClick={() => setRouteTarget(nearestHospital)}
               style={{
@@ -479,7 +485,8 @@ export default function AccidentMapTab({ selectedVehicle, telemetry, updateTelem
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px'
+                gap: '4px',
+                whiteSpace: 'nowrap'
               }}
             >
               🏥 Nearest Hospital
@@ -497,7 +504,8 @@ export default function AccidentMapTab({ selectedVehicle, telemetry, updateTelem
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px'
+                gap: '4px',
+                whiteSpace: 'nowrap'
               }}
             >
               👮 Nearest Police
@@ -725,7 +733,7 @@ export default function AccidentMapTab({ selectedVehicle, telemetry, updateTelem
           </span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '14px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '14px' }}>
           {displayedResponders.map(r => {
             const isHosp = r.type === 'Hospital';
             const isNearest = (isHosp && r.id === nearestHospital?.id) || (!isHosp && r.id === nearestPolice?.id);

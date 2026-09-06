@@ -361,7 +361,7 @@ export default function PersonalHospitalMapTab({ selectedVehicle, medicalProfile
       </div>
 
       {/* PROMINENT DUAL NEAREST RESPONDERS CARD */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '14px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '14px' }}>
         {/* Closest Hospital */}
         <div className="glass-card" style={{
           padding: '16px',

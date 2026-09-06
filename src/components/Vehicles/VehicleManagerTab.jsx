@@ -339,7 +339,7 @@ export default function VehicleManagerTab({ vehicles, setVehicles, selectedVehic
       )}
 
       {/* Vehicle Garage Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '20px' }}>
         {vehicles.map(v => {
           const isSelected = v.id === selectedVehicle.id;
           const Icon = v.type === 'two-wheeler' ? Bike : Car;

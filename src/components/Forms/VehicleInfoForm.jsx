@@ -131,7 +131,7 @@ export default function VehicleInfoForm({ selectedVehicle, setSelectedVehicle, v
             <Car size={18} /> 1. Vehicle Specifications & Identity
           </h3>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '16px' }}>
             <div>
               <label style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'block', marginBottom: '6px', fontWeight: 600 }}>VEHICLE NAME & MODEL *</label>
               <input 
@@ -220,7 +220,7 @@ export default function VehicleInfoForm({ selectedVehicle, setSelectedVehicle, v
             <Cpu size={18} /> 2. Owner Details & ASAAS Hardware Node Pairing
           </h3>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '16px' }}>
             <div>
               <label style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'block', marginBottom: '6px', fontWeight: 600 }}>REGISTERED OWNER NAME</label>
               <input 
@@ -276,7 +276,7 @@ export default function VehicleInfoForm({ selectedVehicle, setSelectedVehicle, v
             <FileText size={18} /> 3. Motor Insurance, RC & PUC Legal Vault
           </h3>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '16px' }}>
             <div>
               <label style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'block', marginBottom: '6px', fontWeight: 600 }}>INSURANCE PROVIDER NAME</label>
               <input 

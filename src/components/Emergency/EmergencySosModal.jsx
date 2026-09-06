@@ -309,7 +309,7 @@ export default function EmergencySosModal({
                 <>
                   <button 
                     onClick={handleStopButton}
-                    className="btn btn-emergency"
+                    className="btn btn-emergency emergency-stop-btn"
                     style={{
                       fontSize: '0.86rem',
                       padding: '10px 18px',
@@ -360,10 +360,12 @@ export default function EmergencySosModal({
                 justifyContent: 'space-between', 
                 marginTop: '8px',
                 fontSize: '0.74rem',
-                color: '#94a3b8'
+                color: '#94a3b8',
+                flexWrap: 'wrap',
+                gap: '8px'
               }}>
                 <span>Adjust Window Duration:</span>
-                <div style={{ display: 'flex', gap: '6px' }}>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   {[10, 15, 20, 30].map(sec => (
                     <button
                       key={sec}
