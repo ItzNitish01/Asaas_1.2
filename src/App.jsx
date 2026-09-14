@@ -27,6 +27,7 @@ import PoliceDirectoryTab from './components/Police/PoliceDirectoryTab';
 import GuardianPortalTab from './components/Guardian/GuardianPortalTab';
 import GuardianTripHistoryTab from './components/Guardian/GuardianTripHistoryTab';
 import GuardianCircleTab from './components/Guardian/GuardianCircleTab';
+import AdminAuditTab from './components/Admin/AdminAuditTab';
 import MultiDeviceModal from './components/MultiDevice/MultiDeviceModal';
 import cloudDb from './services/cloudDbEngine';
 
@@ -41,39 +42,52 @@ const getInitialUser = () => {
   try {
     const params = new URLSearchParams(window.location.search);
     const view = params.get('view');
+    if (view === 'admin' || view === 'superadmin') {
+      return {
+        name: 'System Administrator (Root)',
+        username: 'admin',
+        email: 'admin@asaas.gov.in',
+        role: 'Super Admin'
+      };
+    }
     if (view === 'hospital') {
       return {
-        name: 'Dr. Rohan Sharma (ER Doctor)',
-        email: 'dr.rohan@trauma108.gov.in',
+        name: 'Dr. Priya Mehta (ER Chief)',
+        username: 'hospital_er',
+        email: 'dr.priya@trauma108.gov.in',
         role: 'Paramedic ER'
       };
     }
     if (view === 'police') {
       return {
-        name: 'Inspector Vijay Kumar (PCR 112)',
-        email: 'inspector.vijay@delhipolice.gov.in',
+        name: 'SI Vikram Nair (PCR 112)',
+        username: 'police_ctrl',
+        email: 'pcr@delhipolice.gov.in',
         role: 'Police Command'
       };
     }
     if (view === 'guardian') {
       return {
         name: 'Sarah Mercer (Guardian)',
+        username: 'guardian_user',
         email: 'sarah.mercer@example.com',
         role: 'Guardian'
       };
     }
   } catch (e) {}
   return {
-    name: 'Alex Mercer (Owner)',
-    email: 'alex.mercer@safedrive.io',
+    name: 'Aaradhya Sharma (Owner)',
+    username: 'vehicle_owner',
+    email: 'owner@example.com',
     role: 'Vehicle Owner'
   };
 };
 
 const getRoleHomeTab = (role) => {
-  if (role === 'Paramedic ER' || role === 'Hospital Staff') return 'hospital-terminal';
-  if (role === 'Police Command' || role === 'Police / Traffic Control') return 'police-command';
-  if (role === 'Guardian') return 'guardian-portal';
+  if (role === 'Super Admin' || role === 'SUPER_ADMIN') return 'admin-audit';
+  if (role === 'Paramedic ER' || role === 'Hospital Staff' || role === 'HOSPITAL_ER') return 'hospital-terminal';
+  if (role === 'Police Command' || role === 'Police / Traffic Control' || role === 'POLICE_CONTROL') return 'police-command';
+  if (role === 'Guardian' || role === 'GUARDIAN_PUBLIC') return 'guardian-portal';
   return 'dashboard';
 };
 
@@ -341,6 +355,10 @@ export default function App() {
               triggerEmergency={triggerEmergency}
               setActiveTab={setActiveTab}
             />
+          )}
+
+          {activeTab === 'admin-audit' && (
+            <AdminAuditTab setActiveTab={setActiveTab} />
           )}
 
           {activeTab === 'hospital-terminal' && (

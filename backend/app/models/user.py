@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 from app.models.base import TimestampMixin
 
-ROLE_CHOICES = ("SUPER_ADMIN", "HOSPITAL_ER", "POLICE_CONTROL", "VEHICLE_OWNER")
+ROLE_CHOICES = ("SUPER_ADMIN", "HOSPITAL_ER", "POLICE_CONTROL", "VEHICLE_OWNER", "GUARDIAN_PUBLIC")
 
 
 class User(Base, TimestampMixin):

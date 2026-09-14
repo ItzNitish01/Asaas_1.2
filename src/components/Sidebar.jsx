@@ -15,6 +15,7 @@ import {
   Zap,
   FileText,
   ClipboardList,
+  Server,
   X
 } from 'lucide-react';
 
@@ -31,7 +32,24 @@ export default function Sidebar({
 
   // Strict Role-Based Tab Configurations
   let navItems = [];
-  if (role === 'Paramedic ER' || role === 'Hospital Staff') {
+  if (role === 'Super Admin' || role === 'SUPER_ADMIN') {
+    navItems = [
+      { id: 'admin-audit', label: 'Master System & Fleet Audit', icon: ShieldAlert, badge: 'ROOT', badgeColor: 'primary' },
+      { id: 'hospital-terminal', label: 'Trauma ER Terminal', icon: HeartPulse, badge: emergencyActive ? 'CODE RED' : null, badgeColor: 'danger' },
+      { id: 'police-command', label: 'Highway PCR Command', icon: ShieldAlert },
+      { id: 'guardian-portal', label: 'Family Safety Portal', icon: Users },
+      { id: 'dashboard', label: 'Driver Cockpit & Telemetry', icon: LayoutDashboard },
+      { id: 'map', label: 'Live GPS Accident Radar', icon: MapPin },
+      { id: 'hospital-map', label: 'Trauma Centers GIS', icon: Building2 },
+      { id: 'ai-analysis', label: 'AI Crash Severity', icon: BrainCircuit },
+      { id: 'vehicles', label: 'Fleet Garage & Documents', icon: Car, badge: documentExpiryCount > 0 ? `${documentExpiryCount}` : null, badgeColor: 'warning' },
+      { id: 'medical', label: 'ABHA Medical Records', icon: HeartPulse },
+      { id: 'contacts', label: 'Global Directory', icon: Users },
+      { id: 'history', label: 'Full Incident Logs', icon: History },
+      { id: 'architecture', label: 'System Architecture', icon: Network },
+      { id: 'api-hub', label: 'IoT Hardware API Hub', icon: Cpu }
+    ];
+  } else if (role === 'Paramedic ER' || role === 'Hospital Staff') {
     navItems = [
       { id: 'hospital-terminal', label: 'Emergency Trauma Triage', icon: HeartPulse, badge: emergencyActive ? 'CODE RED' : 'STANDBY', badgeColor: emergencyActive ? 'danger' : 'success' },
       { id: 'hospital-map', label: 'Trauma Centers & Routes', icon: Building2 },
@@ -124,6 +142,20 @@ export default function Sidebar({
   );
 
   const renderHardwareCard = () => {
+    if (role === 'Super Admin' || role === 'SUPER_ADMIN') {
+      return (
+        <div className="glass-card" style={{ padding: '14px', marginTop: '20px', border: '1px solid rgba(168, 85, 247, 0.4)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', fontWeight: 700, color: '#a855f7', marginBottom: '6px' }}>
+            <Server size={14} /> Global Central Gateway
+          </div>
+          <p style={{ fontSize: '0.74rem', color: '#94a3b8', margin: 0, lineHeight: 1.4 }}>
+            FastAPI: <strong style={{ color: '#10b981' }}>Port 5000 Online</strong><br />
+            Database: <strong style={{ color: '#38bdf8' }}>Neon PostGIS (9 ER / 5 PCR)</strong><br />
+            Event Bus: <strong style={{ color: '#a855f7' }}>Upstash TLS Live</strong>
+          </p>
+        </div>
+      );
+    }
     if (role === 'Paramedic ER') {
       return (
         <div className="glass-card" style={{ padding: '14px', marginTop: '20px', border: '1px solid rgba(239, 68, 68, 0.3)' }}>

@@ -105,6 +105,8 @@ USERS = [
      "role": "POLICE_CONTROL", "full_name": "SI Vikram Nair (PCR Controller)"},
     {"username": "vehicle_owner", "email": "owner@example.com", "password": "Owner@1234",
      "role": "VEHICLE_OWNER", "full_name": "Aaradhya Sharma"},
+    {"username": "guardian_user", "email": "guardian@example.com", "password": "Guardian@1234",
+     "role": "GUARDIAN_PUBLIC", "full_name": "Sarah Mercer (Family Guardian)"},
 ]
 
 

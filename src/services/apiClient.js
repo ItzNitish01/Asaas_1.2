@@ -135,5 +135,6 @@ class BackendApiService {
 }
 
 export const backendApi = new BackendApiService();
+export const apiClient = backendApi;
 export default backendApi;
 

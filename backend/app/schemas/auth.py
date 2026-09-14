@@ -22,6 +22,8 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
     role: str
     user_id: int
+    username: Optional[str] = None
+    full_name: Optional[str] = None
 
 
 class UserOut(BaseModel):

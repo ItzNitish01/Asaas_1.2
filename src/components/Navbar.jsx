@@ -38,10 +38,11 @@ export default function Navbar({
   onOpenMultiDevice
 }) {
   const role = currentUser?.role || 'Vehicle Owner';
-  const isHospital = role === 'Paramedic ER' || role === 'Hospital Staff';
-  const isPolice = role === 'Police Command' || role === 'Police / Traffic Control';
-  const isGuardian = role === 'Guardian';
-  const isVehicleOwner = !isHospital && !isPolice && !isGuardian;
+  const isSuperAdmin = role === 'Super Admin' || role === 'SUPER_ADMIN';
+  const isHospital = role === 'Paramedic ER' || role === 'Hospital Staff' || role === 'HOSPITAL_ER';
+  const isPolice = role === 'Police Command' || role === 'Police / Traffic Control' || role === 'POLICE_CONTROL';
+  const isGuardian = role === 'Guardian' || role === 'GUARDIAN_PUBLIC';
+  const isVehicleOwner = !isSuperAdmin && !isHospital && !isPolice && !isGuardian;
 
   const [backendOnline, setBackendOnline] = useState(backendApi.isBackendOnline);
 
@@ -274,17 +275,37 @@ export default function Navbar({
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            background: 'rgba(168, 85, 247, 0.12)',
-            border: '1px solid rgba(168, 85, 247, 0.3)',
+            background: 'rgba(16, 185, 129, 0.12)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
             borderRadius: '10px',
             padding: '5px 12px',
-            color: '#e9d5ff',
+            color: '#6ee7b7',
             fontSize: '0.78rem',
             fontWeight: 700,
             flexShrink: 0
           }}>
-            <Car size={15} color="#c084fc" />
+            <Car size={15} color="#10b981" />
             <span>Monitoring: Alex (Hyundai Creta)</span>
+          </div>
+        )}
+
+        {/* ==================== 5. SUPER ADMIN HEADER ==================== */}
+        {isSuperAdmin && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'rgba(168, 85, 247, 0.15)',
+            border: '1px solid rgba(168, 85, 247, 0.35)',
+            borderRadius: '10px',
+            padding: '5px 12px',
+            color: '#d8b4fe',
+            fontSize: '0.78rem',
+            fontWeight: 700,
+            flexShrink: 0
+          }}>
+            <ShieldAlert size={16} color="#a855f7" />
+            <span>Root Fleet &amp; Gateway Audit</span>
           </div>
         )}
 
@@ -297,26 +318,31 @@ export default function Navbar({
           borderRadius: '20px',
           fontSize: '0.75rem',
           fontWeight: 800,
-          background: isHospital ? 'rgba(239, 68, 68, 0.2)' 
+          background: isSuperAdmin ? 'rgba(168, 85, 247, 0.25)'
+            : isHospital ? 'rgba(239, 68, 68, 0.2)' 
             : isPolice ? 'rgba(56, 189, 248, 0.2)'
-            : isGuardian ? 'rgba(168, 85, 247, 0.2)'
+            : isGuardian ? 'rgba(16, 185, 129, 0.2)'
             : 'rgba(245, 158, 11, 0.2)',
-          border: isHospital ? '1px solid #ef4444' 
+          border: isSuperAdmin ? '1px solid #a855f7'
+            : isHospital ? '1px solid #ef4444' 
             : isPolice ? '1px solid #38bdf8'
-            : isGuardian ? '1px solid #c084fc'
+            : isGuardian ? '1px solid #10b981'
             : '1px solid #f59e0b',
-          color: isHospital ? '#fca5a5' 
+          color: isSuperAdmin ? '#d8b4fe'
+            : isHospital ? '#fca5a5' 
             : isPolice ? '#7dd3fc'
-            : isGuardian ? '#e9d5ff'
+            : isGuardian ? '#6ee7b7'
             : '#fde68a',
           flexShrink: 0
         }}>
-          {isHospital ? <Heart size={14} color="#ef4444" />
+          {isSuperAdmin ? <ShieldAlert size={14} color="#a855f7" />
+            : isHospital ? <Heart size={14} color="#ef4444" />
             : isPolice ? <Shield size={14} color="#38bdf8" />
-            : isGuardian ? <Users size={14} color="#c084fc" />
+            : isGuardian ? <Users size={14} color="#10b981" />
             : <Car size={14} color="#f59e0b" />}
           <span className="btn-text-hide-xs">
-            {isHospital ? 'HOSPITAL ER TRAUMA'
+            {isSuperAdmin ? 'SUPER ADMIN ROOT'
+              : isHospital ? 'HOSPITAL ER TRAUMA'
               : isPolice ? 'POLICE PCR COMMAND'
               : isGuardian ? 'FAMILY GUARDIAN'
               : 'VEHICLE COCKPIT'}

@@ -392,32 +392,34 @@ ASAAS enforces strict privilege separation via **JSON Web Tokens (HS256)** and F
 
 ### 1. Access Permission Matrix
 
-| Capability / Operational Surface | `SUPER_ADMIN` | `HOSPITAL_ER` | `POLICE_CONTROL` | `VEHICLE_OWNER` |
-|---|:---:|:---:|:---:|:---:|
-| **Vehicle Telemetry Streaming** | Full Fleet | Incident Only | Incident Only | Owned Vehicles |
-| **Trauma ER Dashboard & ICU Bed Staging** | View | Full Control | Read-Only | - |
-| **Police PCR Dispatch & Green Corridor** | View | Read-Only | Full Control | - |
-| **Electronic FIR Generation** | Audit | - | Create / Sign | - |
-| **ABHA Medical Card Editing** | Audit | Read-Only | - | Full Control |
-| **Emergency Guardian Roster Management** | Audit | Read-Only | - | Full Control |
-| **Global Incident History Audit** | Full Control | Assigned | Assigned | Personal |
-| **System Health & Gateway Configuration** | Full Control | - | - | - |
+| Capability / Operational Surface | `SUPER_ADMIN` | `HOSPITAL_ER` | `POLICE_CONTROL` | `VEHICLE_OWNER` | `GUARDIAN_PUBLIC` |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **Vehicle Telemetry Streaming** | Full Fleet | Incident Only | Incident Only | Owned Vehicles | Assigned Vehicle |
+| **Trauma ER Dashboard & ICU Bed Staging** | View | Full Control | Read-Only | - | - |
+| **Police PCR Dispatch & Green Corridor** | View | Read-Only | Full Control | - | - |
+| **Electronic FIR Generation** | Audit | - | Create / Sign | - | - |
+| **ABHA Medical Card Access** | Full Audit | Read-Only | - | Full Control | Emergency View |
+| **Emergency Guardian Roster Management** | Full Audit | Read-Only | - | Full Control | View / Verify |
+| **Global Incident History Audit** | Full Control | Assigned | Assigned | Personal | Family Circle |
+| **Multi-Agency Command Terminal Jump** | Full Control | - | - | - | - |
+| **System Health & Gateway Configuration** | Full Control | - | - | - | - |
 
 ---
 
 ### 2. Pre-Configured Demonstration Accounts
 
-All demo accounts are pre-seeded with secure bcrypt-hashed passwords in the database:
+All demo accounts are pre-seeded in the Neon PostgreSQL database with bcrypt-hashed passwords. Users can log in using either their **Username or Email Address**:
 
-| Role | Username | Password | Default Workspace View |
-|---|---|---|---|
-| **SUPER_ADMIN** | `admin` | `Admin@1234` | **System Audit & Fleet Oversight** (`admin-audit`) |
-| **HOSPITAL_ER** | `hospital_er` | `Hospital@1234` | **Trauma ER Terminal & ICU Bed Bay** (`hospital-terminal`) |
-| **POLICE_CONTROL** | `police_ctrl` | `Police@1234` | **Police Interceptor Command** (`police-control`) |
-| **VEHICLE_OWNER** | `vehicle_owner` | `Owner@1234` | **Live Vehicle Garage & Telemetry Deck** (`dashboard`) |
+| Role | Username | Email | Password | Default Workspace View |
+|---|---|---|---|---|
+| **SUPER_ADMIN** | `admin` | `admin@asaas.gov.in` | `Admin@1234` | **Master System Audit & Fleet Control** (`admin-audit`) |
+| **HOSPITAL_ER** | `hospital_er` | `er@aiims.ac.in` | `Hospital@1234` | **Trauma ER Terminal & ICU Bed Bay** (`hospital-terminal`) |
+| **POLICE_CONTROL** | `police_ctrl` | `pcr@delhipolice.gov.in` | `Police@1234` | **Highway PCR Command Interceptor** (`police-command`) |
+| **VEHICLE_OWNER** | `vehicle_owner` | `owner@example.com` | `Owner@1234` | **Driver Cockpit & Telemetry Deck** (`dashboard`) |
+| **GUARDIAN_PUBLIC** | `guardian_user` | `guardian@example.com` | `Guardian@1234` | **Family Safety Portal & Trip Radar** (`guardian-portal`) |
 
 > [!TIP]
-> Logging in with any account automatically transitions the web dashboard to that role's specialized workspace with zero manual navigation required. In production, rotate all default credentials using the `/api/v1/auth` endpoints.
+> Logging in with any account automatically transitions the web dashboard to that role's specialized workspace with zero manual navigation required. Super Admins possess root visibility and can hot-swap into any agency terminal directly from the top navigation or sidebar. In production, rotate all default credentials using the `/api/v1/auth` endpoints.
 
 ---
 
