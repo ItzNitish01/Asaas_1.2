@@ -265,9 +265,10 @@ class CloudDbEngine {
       const activeRes = await backendApi.getActiveIncident();
       if (activeRes && activeRes.status === 'SUCCESS') {
         if (activeRes.incident) {
-          this.applyBackendIncident(activeRes.incident, activeRes.incident.dispatch, false);
-        } else if (this.state.activeIncident) {
-          // Clear stale active incident cached from prior sessions
+          const keepLive = Boolean(this.state.telemetry?.isEmergencyAlert);
+          this.applyBackendIncident(activeRes.incident, activeRes.incident.dispatch, keepLive);
+        } else if (this.state.activeIncident && !this.state.telemetry?.isEmergencyAlert) {
+          // Clear stale active incident cached from prior sessions ONLY if no emergency is underway
           this.state.activeIncident = null;
           this.state.telemetry = {
             ...this.state.telemetry,

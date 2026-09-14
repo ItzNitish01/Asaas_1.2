@@ -92,7 +92,7 @@ AsyncSessionLocal = async_sessionmaker(
 
 
 async def init_db() -> None:
-    """Create all tables (runs at startup)."""
+    """Create all tables (runs at startup) and ensure default users exist."""
     async with engine.begin() as conn:
         if not _is_sqlite:
             # Enable PostGIS extension (idempotent; safe fallback if permission restricted)
@@ -103,6 +103,26 @@ async def init_db() -> None:
         from app.models import base  # noqa: ensure all models are imported
         await conn.run_sync(Base.metadata.create_all)
     log.info("[DB] Tables verified / created.")
+
+    # Auto-seed standard users if users table is empty
+    try:
+        from app.models.user import User
+        from app.core.security import hash_password
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(select(User).limit(1))
+            if not result.scalar_one_or_none():
+                default_users = [
+                    User(username="admin", email="admin@asaas.gov.in", hashed_password=hash_password("Admin@1234"), role="SUPER_ADMIN", full_name="ASAAS System Administrator"),
+                    User(username="hospital_er", email="er@aiims.ac.in", hashed_password=hash_password("Hospital@1234"), role="HOSPITAL_ER", full_name="Dr. Priya Mehta (ER Chief)"),
+                    User(username="police_ctrl", email="pcr@delhipolice.gov.in", hashed_password=hash_password("Police@1234"), role="POLICE_CONTROL", full_name="SI Vikram Nair (PCR Controller)"),
+                    User(username="vehicle_owner", email="owner@example.com", hashed_password=hash_password("Owner@1234"), role="VEHICLE_OWNER", full_name="Aaradhya Sharma"),
+                    User(username="guardian_user", email="guardian@example.com", hashed_password=hash_password("Guardian@1234"), role="GUARDIAN_PUBLIC", full_name="Sarah Mercer (Family Guardian)"),
+                ]
+                session.add_all(default_users)
+                await session.commit()
+                log.info("[DB] Default system users auto-seeded successfully.")
+    except Exception as e:
+        log.warning(f"[DB] Auto-seed check notice: {e}")
 
 
 async def close_db() -> None:

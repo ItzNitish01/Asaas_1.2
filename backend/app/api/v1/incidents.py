@@ -1,5 +1,6 @@
 """Incident management endpoints."""
 
+import asyncio
 import json
 import logging
 from datetime import datetime, timezone
@@ -80,15 +81,26 @@ async def run_emergency_pipeline(
     nearest_hosp = hospital_list[0] if hospital_list else None
     nearest_pol = police_list[0] if police_list else None
 
-    # Road ETA via OSRM
+    # Road ETA via OSRM (computed concurrently with graceful fallback)
     hosp_route = {"driving_distance_km": 4.2, "eta_minutes": 8, "polyline": None}
     pol_route = {"driving_distance_km": 2.1, "eta_minutes": 4, "polyline": None}
-    if nearest_hosp:
-        _, h = nearest_hosp
-        hosp_route = await get_driving_route_and_eta(lat, lng, h.lat, h.lng)
-    if nearest_pol:
-        _, p = nearest_pol
-        pol_route = await get_driving_route_and_eta(lat, lng, p.lat, p.lng)
+    hosp_task = get_driving_route_and_eta(lat, lng, nearest_hosp[1].lat, nearest_hosp[1].lng) if nearest_hosp else None
+    pol_task = get_driving_route_and_eta(lat, lng, nearest_pol[1].lat, nearest_pol[1].lng) if nearest_pol else None
+
+    if hosp_task and pol_task:
+        res_hosp, res_pol = await asyncio.gather(hosp_task, pol_task, return_exceptions=True)
+        if isinstance(res_hosp, dict):
+            hosp_route = res_hosp
+        if isinstance(res_pol, dict):
+            pol_route = res_pol
+    elif hosp_task:
+        res_hosp = await hosp_task
+        if isinstance(res_hosp, dict):
+            hosp_route = res_hosp
+    elif pol_task:
+        res_pol = await pol_task
+        if isinstance(res_pol, dict):
+            pol_route = res_pol
 
     # AI severity if not provided
     if not ai_score:

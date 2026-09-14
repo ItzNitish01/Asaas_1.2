@@ -164,17 +164,18 @@ export default function App() {
       }
 
       if (state.activeIncident && state.telemetry?.isEmergencyAlert) {
-        setEmergencyData({
-          triggerSource: 'WORLDWIDE_CLOUD_EVENT',
+        setEmergencyData(prev => ({
+          triggerSource: prev?.triggerSource || 'WORLDWIDE_CLOUD_EVENT',
           severity: state.activeIncident.severity || 'CRITICAL',
           reason: state.activeIncident.aiSummary || state.activeIncident.reason || 'Accident Collision Detected'
-        });
-        // On driver cockpit, pop up emergency modal ONLY for newly triggered incidents
+        }));
+        // On driver cockpit, pop up emergency modal for newly triggered incidents
         if (activeTab === 'dashboard' && state.activeIncident.id !== lastProcessedIncidentId.current) {
           lastProcessedIncidentId.current = state.activeIncident.id;
           setIsSosOpen(true);
         }
-      } else {
+      } else if (state.telemetry?.stopButtonPressed && !state.activeIncident) {
+        // Only close SOS modal if an explicit STOP / CANCEL button interrupt was pressed
         setIsSosOpen(false);
       }
     });

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { sirenSound } from '../../services/telemetryEngine';
 import { findNearestEmergencyServices } from '../../services/geoService';
+import cloudDb from '../../services/cloudDbEngine';
 
 export default function EmergencySosModal({ 
   isOpen, 
@@ -185,6 +186,7 @@ export default function EmergencySosModal({
     sirenSound.stopSiren();
     setIsStopped(true);
     hasDispatchedRef.current = false;
+    cloudDb.abortEmergency('Occupant pressed stop button (False alarm cancelled)');
     setTimeline(prev => [
       ...prev,
       { time: getCurrentTimeStr(), text: 'HARDWARE CIRCUIT INTERRUPT: Stop Button Pressed - Audio Siren & Alert Halted (False Alarm Cancelled)', icon: '🛑' }

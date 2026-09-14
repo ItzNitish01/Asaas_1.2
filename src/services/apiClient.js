@@ -107,9 +107,11 @@ class BackendApiService {
     return this.get(`/v1/geospatial/nearest?lat=${lat}&lng=${lng}`);
   }
 
-  async get(endpoint) {
+  async get(endpoint, timeoutMs = 2500) {
     try {
-      const res = await fetch(`${API_BASE}${endpoint}`);
+      const res = await fetch(`${API_BASE}${endpoint}`, {
+        signal: AbortSignal.timeout(timeoutMs)
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.json();
     } catch (err) {
@@ -118,12 +120,13 @@ class BackendApiService {
     }
   }
 
-  async post(endpoint, body) {
+  async post(endpoint, body, timeoutMs = 2500) {
     try {
       const res = await fetch(`${API_BASE}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(timeoutMs)
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.json();

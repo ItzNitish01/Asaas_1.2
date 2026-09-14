@@ -51,7 +51,7 @@ async def get_driving_route_and_eta(
         f"?overview=simplified&geometries=geojson"
     )
     try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
+        async with httpx.AsyncClient(timeout=1.5) as client:
             resp = await client.get(url)
             data = resp.json()
             if data.get("code") == "Ok" and data.get("routes"):

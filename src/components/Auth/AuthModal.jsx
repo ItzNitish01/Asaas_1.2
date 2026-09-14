@@ -80,11 +80,12 @@ export default function AuthModal({ isOpen, onClose, currentUser, setCurrentUser
     else if (selectedRole === 'Vehicle Owner') displayName = 'Aaradhya Sharma (Owner)';
 
     try {
-      // Attempt production JWT authentication via backend
+      // Attempt production JWT authentication via backend with fast timeout
+      const timeout = apiClient.isBackendOnline ? 2000 : 700;
       const res = await apiClient.post('/v1/auth/login', {
         username: identifier.trim(),
         password: password.trim()
-      });
+      }, timeout);
 
       if (res && res.access_token) {
         localStorage.setItem('asaas_token', res.access_token);
@@ -111,7 +112,7 @@ export default function AuthModal({ isOpen, onClose, currentUser, setCurrentUser
         setTimeout(() => {
           setFeedbackMsg(null);
           onClose();
-        }, 400);
+        }, 300);
         return;
       }
     } catch (apiErr) {
@@ -132,7 +133,7 @@ export default function AuthModal({ isOpen, onClose, currentUser, setCurrentUser
     setTimeout(() => {
       setFeedbackMsg(null);
       onClose();
-    }, 400);
+    }, 300);
   };
 
   const handleRegister = async (e) => {
@@ -151,13 +152,14 @@ export default function AuthModal({ isOpen, onClose, currentUser, setCurrentUser
       else if (regRole === 'Police Command') backendRole = 'POLICE_CONTROL';
       else if (regRole === 'Guardian') backendRole = 'GUARDIAN_PUBLIC';
 
+      const timeout = apiClient.isBackendOnline ? 2000 : 700;
       await apiClient.post('/v1/auth/register', {
         username: generatedUsername,
         email: regEmail.trim(),
         password: regPassword || 'Password@123',
         full_name: regName.trim(),
         role: backendRole
-      });
+      }, timeout);
     } catch (regErr) {
       console.warn('[AUTH] Registration saved to local state:', regErr.message);
     } finally {
