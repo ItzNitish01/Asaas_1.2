@@ -650,7 +650,11 @@ h1, h2, h3, h4, h5, h6 {
     max-width: 100% !important;
   }
   .mobile-nav-toggle {
-    display: none !important;
+    display: flex !important;
+  }
+  .terminal-container {
+    padding: 10px 8px !important;
+    max-width: 100% !important;
   }
   .navbar-container {
     padding: 8px 10px !important;
@@ -719,6 +723,15 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+@media (max-width: 640px) {
+  .navbar-role-badge span.btn-text-hide-xs {
+    display: none !important;
+  }
+  .navbar-hw-stats {
+    display: none !important;
+  }
+}
+
 /* Extra Small Phones (< 480px) */
 @media (max-width: 480px) {
   .navbar-brand-group h1 {
@@ -733,6 +746,9 @@ h1, h2, h3, h4, h5, h6 {
   .tab-content-container {
     padding: 10px 8px !important;
     gap: 10px !important;
+  }
+  .terminal-container {
+    padding: 8px 6px !important;
   }
   .glass-card {
     padding: 12px 10px !important;

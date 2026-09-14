@@ -20,23 +20,34 @@ export default function MobileBottomNav({
   currentUser
 }) {
   const role = currentUser?.role || 'Vehicle Owner';
+  const isSuperAdmin = role === 'Super Admin' || role === 'SUPER_ADMIN';
+  const isHospital = role === 'Paramedic ER' || role === 'Hospital Staff' || role === 'HOSPITAL_ER';
+  const isPolice = role === 'Police Command' || role === 'Police / Traffic Control' || role === 'POLICE_CONTROL';
+  const isGuardian = role === 'Guardian' || role === 'GUARDIAN_PUBLIC';
 
   let mainTabs = [];
-  if (role === 'Paramedic ER' || role === 'Hospital Staff') {
+  if (isSuperAdmin) {
+    mainTabs = [
+      { id: 'admin-audit', label: 'Audit', icon: ShieldAlert },
+      { id: 'hospital-terminal', label: 'Trauma ER', icon: Heart },
+      { id: 'police-command', label: 'PCR 112', icon: Shield },
+      { id: 'dashboard', label: 'Cockpit', icon: LayoutDashboard }
+    ];
+  } else if (isHospital) {
     mainTabs = [
       { id: 'hospital-terminal', label: 'Trauma ER', icon: Heart },
       { id: 'hospital-map', label: 'Trauma Map', icon: Building2 },
       { id: 'history', label: 'Incidents', icon: History },
       { id: 'contacts', label: 'ICE Doctors', icon: Users }
     ];
-  } else if (role === 'Police Command' || role === 'Police / Traffic Control') {
+  } else if (isPolice) {
     mainTabs = [
       { id: 'police-command', label: 'PCR 112', icon: Shield },
       { id: 'map', label: 'Radar Map', icon: MapPin },
       { id: 'history', label: 'FIR Logs', icon: History },
       { id: 'contacts', label: 'Police Dir', icon: Users }
     ];
-  } else if (role === 'Guardian') {
+  } else if (isGuardian) {
     mainTabs = [
       { id: 'guardian-portal', label: 'Safety', icon: Users },
       { id: 'map', label: 'Live GPS', icon: MapPin },

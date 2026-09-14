@@ -379,10 +379,10 @@ export default function HospitalTerminalTab() {
       </div>
 
       {/* SUB-NAVIGATION TABS */}
-      <div style={{
+      <div className="touch-scroll-x no-scrollbar" style={{
         display: 'flex',
-        flexWrap: 'wrap',
         gap: '8px',
+        overflowX: 'auto',
         marginBottom: '20px',
         background: 'rgba(15, 23, 42, 0.7)',
         padding: '6px',
@@ -440,8 +440,9 @@ export default function HospitalTerminalTab() {
               key={tab.id}
               onClick={() => setActiveSubTab(tab.id)}
               style={{
-                flex: '1 1 auto',
-                minWidth: '170px',
+                flex: '0 0 auto',
+                minWidth: 'clamp(140px, 30vw, 190px)',
+                whiteSpace: 'nowrap',
                 background: isActive 
                   ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(59, 130, 246, 0.2) 100%)' 
                   : 'transparent',

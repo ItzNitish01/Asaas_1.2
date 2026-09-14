@@ -287,10 +287,10 @@ export default function PoliceCommandTab() {
       </div>
 
       {/* SUB-NAVIGATION TABS */}
-      <div style={{
+      <div className="touch-scroll-x no-scrollbar" style={{
         display: 'flex',
-        flexWrap: 'wrap',
         gap: '8px',
+        overflowX: 'auto',
         marginBottom: '20px',
         background: 'rgba(15, 23, 42, 0.7)',
         padding: '6px',
@@ -341,8 +341,9 @@ export default function PoliceCommandTab() {
               key={tab.id}
               onClick={() => setActiveSubTab(tab.id)}
               style={{
-                flex: '1 1 auto',
-                minWidth: '170px',
+                flex: '0 0 auto',
+                minWidth: 'clamp(140px, 30vw, 190px)',
+                whiteSpace: 'nowrap',
                 background: isActive 
                   ? 'linear-gradient(135deg, rgba(2, 132, 199, 0.3) 0%, rgba(3, 105, 161, 0.25) 100%)' 
                   : 'transparent',

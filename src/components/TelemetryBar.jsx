@@ -21,9 +21,67 @@ import {
 
 export default function TelemetryBar({ telemetry, currentUser, cloudDb }) {
   const role = currentUser?.role || 'Vehicle Owner';
-  const isHospital = role === 'Paramedic ER' || role === 'Hospital Staff';
-  const isPolice = role === 'Police Command' || role === 'Police / Traffic Control';
-  const isGuardian = role === 'Guardian';
+  const isSuperAdmin = role === 'Super Admin' || role === 'SUPER_ADMIN';
+  const isHospital = role === 'Paramedic ER' || role === 'Hospital Staff' || role === 'HOSPITAL_ER';
+  const isPolice = role === 'Police Command' || role === 'Police / Traffic Control' || role === 'POLICE_CONTROL';
+  const isGuardian = role === 'Guardian' || role === 'GUARDIAN_PUBLIC';
+
+  // ==================== 0. SUPER ADMIN MASTER AUDIT STRIP ====================
+  if (isSuperAdmin) {
+    return (
+      <div className="telemetry-bar-container touch-scroll-x no-scrollbar" style={{ borderBottom: '1px solid rgba(168, 85, 247, 0.3)' }}>
+        <div className="telemetry-bar-item">
+          <ShieldAlert size={16} color="#a855f7" />
+          <div>
+            <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>SYSTEM AUTHORITY</span>
+            <div style={{ fontWeight: 700, color: '#d8b4fe', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span className="live-dot" style={{ background: '#a855f7' }} /> Super Admin Master Fleet Audit
+            </div>
+          </div>
+        </div>
+
+        <div className="telemetry-bar-item">
+          <Activity size={16} color="#10b981" />
+          <div>
+            <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>API GATEWAY LATENCY</span>
+            <div style={{ fontWeight: 700, color: '#10b981' }}>
+              38ms <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>(Neon PostGIS Live)</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="telemetry-bar-item">
+          <Building2 size={16} color="#38bdf8" />
+          <div>
+            <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>EMERGENCY STATIONS</span>
+            <div style={{ fontWeight: 700, color: '#38bdf8' }}>
+              9 Hospitals • 5 Police Hubs
+            </div>
+          </div>
+        </div>
+
+        <div className="telemetry-bar-item">
+          <Car size={16} color="#f59e0b" />
+          <div>
+            <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>FLEET TELEMETRY</span>
+            <div style={{ fontWeight: 700, color: '#f59e0b' }}>
+              4 Active ESP32 Nodes
+            </div>
+          </div>
+        </div>
+
+        <div className="telemetry-bar-item">
+          <Radio size={16} color="#a855f7" />
+          <div>
+            <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>GLOBAL MQTT BROKER</span>
+            <div style={{ fontWeight: 700, color: '#f8fafc' }}>
+              EMQX Cloud (TLS 8084)
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ==================== 1. HOSPITAL ER OPERATIONS STRIP ====================
   if (isHospital) {
