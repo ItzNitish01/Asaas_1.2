@@ -189,8 +189,13 @@ void sendTelemetryPayload(float total_g, float ax, float ay, float az) {
         />
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '14px', flexWrap: 'wrap', gap: '12px' }}>
-          <button onClick={handleSendPacket} className="btn btn-primary" style={{ fontSize: '0.85rem' }}>
-            <Send size={16} /> SEND JSON PACKET TO DASHBOARD
+          <button 
+            onClick={handleSendPacket} 
+            disabled={isSending}
+            className="btn btn-primary" 
+            style={{ fontSize: '0.85rem', opacity: isSending ? 0.7 : 1 }}
+          >
+            <Send size={16} /> {isSending ? 'PERSISTING TO DATABASE...' : 'SEND JSON PACKET TO DASHBOARD & BACKEND'}
           </button>
 
           {responseStatus && (

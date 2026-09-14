@@ -96,11 +96,30 @@ export default function App() {
   const [isSosOpen, setIsSosOpen] = useState(false);
   const [emergencyData, setEmergencyData] = useState({ triggerSource: '', severity: '', reason: '' });
   const lastProcessedIncidentId = useRef(null);
-  const isInitialMount = useRef(true);
+  const initialGracePeriodRef = useRef(true);
+
+  // 3.5s Grace period on fresh load/reload: NEVER auto-open emergency SOS popup on startup
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      initialGracePeriodRef.current = false;
+    }, 3500);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Auth User State
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Automatically switch active tab and sync data whenever currentUser.role changes
+  const prevRoleRef = useRef(currentUser?.role);
+  useEffect(() => {
+    if (currentUser?.role && currentUser.role !== prevRoleRef.current) {
+      prevRoleRef.current = currentUser.role;
+      const targetTab = getRoleHomeTab(currentUser.role);
+      setActiveTab(targetTab);
+      cloudDb.syncFromBackend?.();
+    }
+  }, [currentUser?.role]);
 
   // Subscribe to Worldwide Real-time Cloud Database
   useEffect(() => {
@@ -122,10 +141,9 @@ export default function App() {
         setEmergencyContacts(state.emergencyContacts);
       }
 
-      // On initial page mount or reload, ignore existing active incidents so SOS never starts automatically
-      if (isInitialMount.current) {
-        isInitialMount.current = false;
-        if (state.activeIncident) {
+      // During initial mount or reload, never pop up SOS modal for existing historical incidents
+      if (initialGracePeriodRef.current) {
+        if (state.activeIncident?.id) {
           lastProcessedIncidentId.current = state.activeIncident.id;
         }
         return;

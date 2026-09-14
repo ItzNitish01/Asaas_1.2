@@ -32,6 +32,15 @@ const DEFAULT_ROOM_ID = 'ASAAS-GLOBAL-LIVE';
 const PRIMARY_BROKER = 'wss://broker.emqx.io:8084/mqtt';
 const FALLBACK_BROKER = 'wss://broker.hivemq.com:8884/mqtt';
 
+// Safe normalization helper to ensure allergies and conditions are always arrays for UI components
+const normalizeArrayField = (val, fallback = []) => {
+  if (Array.isArray(val)) return val;
+  if (typeof val === 'string' && val.trim()) {
+    return val.split(',').map(s => s.trim()).filter(Boolean);
+  }
+  return fallback;
+};
+
 class CloudDbEngine {
   constructor() {
     this.client = null;
@@ -111,16 +120,222 @@ class CloudDbEngine {
   }
 
   initBackendSocketBridge() {
-    backendApi.subscribe((type, payload) => {
-      if (type === 'TELEMETRY_STREAM' && payload && payload.telemetry) {
-        this.state.telemetry = { ...this.state.telemetry, ...payload.telemetry };
-        this.notify();
-      } else if (type === 'INCIDENT_TRIGGERED' && payload && payload.incident) {
-        this.handleIncomingMessage('incident', { incident: payload.incident });
-      } else if (type === 'INCIDENT_ABORTED') {
-        this.resetLocalState(false);
+    // When backend connects or status changes, trigger automatic sync with PostgreSQL database
+    backendApi.onStatusChange((isOnline) => {
+      if (isOnline) {
+        this.syncFromBackend();
       }
     });
+
+    // Run immediate sync if backend is already online
+    if (backendApi.isBackendOnline) {
+      this.syncFromBackend();
+    }
+
+    backendApi.subscribe((type, payload) => {
+      if (type === 'TELEMETRY_STREAM' && payload) {
+        const t = payload.telemetry || payload;
+        this.state.telemetry = { 
+          ...this.state.telemetry, 
+          ...t,
+          speedKmh: t.speedKmh ?? this.state.telemetry.speedKmh,
+          totalGForce: t.totalGForce ?? this.state.telemetry.totalGForce,
+          lat: t.lat ?? this.state.telemetry.lat,
+          lng: t.lng ?? this.state.telemetry.lng
+        };
+        this.notify();
+      } else if (type === 'INCIDENT_TRIGGERED' && payload) {
+        const inc = payload.incident || payload;
+        const dispatches = payload.dispatches;
+        this.applyBackendIncident(inc, dispatches, true);
+      } else if (type === 'INCIDENT_ABORTED') {
+        this.abortEmergency();
+      }
+    });
+  }
+
+  applyBackendIncident(inc, dispatches, isLiveAlert = false) {
+    if (!inc) return;
+    const incidentObj = {
+      id: inc.incidentRef || inc.id || `INC-${Date.now().toString().slice(-6)}`,
+      date: inc.createdAt || new Date().toISOString().replace('T', ' ').substring(0, 19),
+      vehicleName: inc.patientSnapshot?.vehiclePlate ? `Vehicle (${inc.patientSnapshot.vehiclePlate})` : 'Hyundai Creta SX (O) Turbo',
+      registrationNumber: inc.patientSnapshot?.vehiclePlate || 'DL-01-AB-4321',
+      deviceId: inc.deviceId || 'ASAAS-001',
+      severity: inc.severity || 'CRITICAL',
+      peakGForce: inc.peakGForce || '5.84g',
+      speedAtImpact: inc.speedAtImpact || '74 km/h',
+      location: inc.locationName || inc.location || 'NH-48 Expressway, KM 34.2',
+      coordinates: inc.coordinates || { lat: inc.lat || 28.4595, lng: inc.lng || 77.0266 },
+      status: inc.status || 'Emergency Active',
+      ambulanceEta: dispatches?.hospital?.ambulanceEtaMinutes ? `${dispatches.hospital.ambulanceEtaMinutes} mins` : '8 mins',
+      aiSummary: inc.aiSummary || `${inc.severity || 'CRITICAL'} Impact Collision. Dispatches in progress.`,
+      patientSnapshot: inc.patientSnapshot ? {
+        name: inc.patientSnapshot.name || this.state.medicalProfile.fullName,
+        bloodGroup: inc.patientSnapshot.bloodGroup || this.state.medicalProfile.bloodGroup,
+        allergies: normalizeArrayField(inc.patientSnapshot.allergies, this.state.medicalProfile.allergies),
+        conditions: normalizeArrayField(inc.patientSnapshot.conditions || inc.patientSnapshot.medicalConditions, this.state.medicalProfile.medicalConditions),
+        physicianPhone: inc.patientSnapshot.physicianPhone || this.state.medicalProfile.primaryPhysicianPhone || '+91 98765 43210'
+      } : {
+        name: this.state.medicalProfile.fullName,
+        bloodGroup: this.state.medicalProfile.bloodGroup,
+        allergies: normalizeArrayField(this.state.medicalProfile.allergies),
+        conditions: normalizeArrayField(this.state.medicalProfile.medicalConditions),
+        physicianPhone: this.state.medicalProfile.primaryPhysicianPhone || '+91 98765 43210'
+      }
+    };
+
+    this.state.activeIncident = incidentObj;
+
+    // ONLY set emergency alert flags on live triggers, NEVER on initial background sync / refresh
+    if (isLiveAlert) {
+      this.state.telemetry = {
+        ...this.state.telemetry,
+        isEmergencyAlert: true,
+        alertSeverity: inc.severity || 'CRITICAL',
+        alertReason: inc.reason || 'Crash Collision Detected'
+      };
+    }
+
+    if (dispatches?.hospital) {
+      this.state.dispatches.hospital = {
+        ...this.state.dispatches.hospital,
+        hospitalName: dispatches.hospital.hospitalName || this.state.dispatches.hospital.hospitalName,
+        ambulanceStatus: dispatches.hospital.ambulanceStatus || 'dispatched',
+        ambulanceUnit: dispatches.hospital.ambulanceUnit || this.state.dispatches.hospital.ambulanceUnit,
+        ambulanceEtaMinutes: dispatches.hospital.ambulanceEtaMinutes || 8,
+        icuBedReserved: dispatches.hospital.icuBedReserved ?? true,
+        icuBedNumber: dispatches.hospital.icuBedNumber || 'Trauma Bay #04',
+        bloodUnitsReserved: dispatches.hospital.bloodUnitsReserved || 2,
+        bloodType: dispatches.hospital.bloodType || 'O+'
+      };
+    }
+
+    if (dispatches?.police) {
+      this.state.dispatches.police = {
+        ...this.state.dispatches.police,
+        policeStationName: dispatches.police.policeStationName || this.state.dispatches.police.policeStationName,
+        pcrStatus: dispatches.police.pcrStatus || 'dispatched',
+        pcrUnit: dispatches.police.pcrUnit || this.state.dispatches.police.pcrUnit,
+        pcrEtaMinutes: dispatches.police.pcrEtaMinutes || 5,
+        greenCorridorActive: dispatches.police.greenCorridorActive ?? true,
+        firGenerated: dispatches.police.firGenerated ?? true,
+        firNumber: dispatches.police.firNumber || 'FIR-2026-DEL-8821'
+      };
+    }
+
+    this.saveToLocalStorage();
+    this.notify();
+  }
+
+  abortEmergency(reason = 'Driver cancelled emergency alert') {
+    this.state.activeIncident = null;
+    this.state.telemetry = {
+      ...this.state.telemetry,
+      isEmergencyAlert: false,
+      alertSeverity: 'NONE',
+      alertReason: '',
+      relayHornActive: false,
+      stopButtonPressed: false
+    };
+    if (this.state.dispatches?.hospital) {
+      this.state.dispatches.hospital.ambulanceStatus = 'standby';
+      this.state.dispatches.hospital.icuBedReserved = false;
+      this.state.dispatches.hospital.bloodUnitsReserved = 0;
+    }
+    if (this.state.dispatches?.police) {
+      this.state.dispatches.police.pcrStatus = 'patrolling';
+      this.state.dispatches.police.greenCorridorActive = false;
+      this.state.dispatches.police.hazardPerimeterSet = false;
+      this.state.dispatches.police.firGenerated = false;
+    }
+    this.saveToLocalStorage();
+    this.publishToCloud(`asaas/${this.roomId}/action`, { action: 'abort', reason });
+    backendApi.abortEmergency(null, reason).catch(() => {});
+    this.notify();
+  }
+
+  clearActiveIncident() {
+    this.abortEmergency('Dismissed by user');
+  }
+
+  async syncFromBackend() {
+    try {
+      // 1. Fetch active incident from PostgreSQL database (for terminal triage records; isLiveAlert = false)
+      const activeRes = await backendApi.getActiveIncident();
+      if (activeRes && activeRes.status === 'SUCCESS') {
+        if (activeRes.incident) {
+          this.applyBackendIncident(activeRes.incident, activeRes.incident.dispatch, false);
+        }
+      }
+
+      // 2. Fetch live hospitals from PostgreSQL database
+      const hospRes = await backendApi.get('/v1/hospitals/all');
+      if (hospRes && hospRes.status === 'SUCCESS' && Array.isArray(hospRes.data) && hospRes.data.length > 0) {
+        const dbHospitals = hospRes.data.map(h => ({
+          id: `hosp-${h.id}`,
+          name: h.name,
+          category: 'Apex Trauma',
+          phone: h.phone || '+91 11 2659 8600',
+          distance: h.city || 'NCR',
+          status: 'Online',
+          type: 'hospital',
+          lat: h.lat,
+          lng: h.lng
+        }));
+        this.state.hospitalEmergencyDirectory = [
+          ...dbHospitals,
+          ...this.state.hospitalEmergencyDirectory.filter(d => d.type !== 'hospital')
+        ];
+      }
+
+      // 3. Fetch registered vehicles
+      const vehRes = await backendApi.get('/v1/registry/vehicles');
+      if (vehRes && vehRes.status === 'SUCCESS' && Array.isArray(vehRes.data) && vehRes.data.length > 0) {
+        this.state.vehicles = vehRes.data.map((v, idx) => ({
+          id: `v${v.id || idx + 1}`,
+          name: v.name,
+          plateNumber: v.registrationNumber,
+          driverName: v.driverName || 'Aaradhya Sharma',
+          bloodGroup: v.bloodGroup || 'O+ (Positive)',
+          type: 'car',
+          deviceId: v.deviceId || 'ASAAS-001',
+          documents: []
+        }));
+      }
+
+      // 4. Fetch medical profile
+      const medRes = await backendApi.get('/v1/registry/medical');
+      if (medRes && medRes.status === 'SUCCESS' && medRes.data) {
+        this.state.medicalProfile = {
+          ...this.state.medicalProfile,
+          fullName: medRes.data.fullName || this.state.medicalProfile.fullName,
+          bloodGroup: medRes.data.bloodGroup || this.state.medicalProfile.bloodGroup,
+          abhaId: medRes.data.abhaId || this.state.medicalProfile.abhaId,
+          allergies: normalizeArrayField(medRes.data.allergies, this.state.medicalProfile.allergies),
+          medicalConditions: normalizeArrayField(medRes.data.medicalConditions, this.state.medicalProfile.medicalConditions),
+          primaryPhysicianName: medRes.data.primaryPhysicianName || this.state.medicalProfile.primaryPhysicianName,
+          primaryPhysicianPhone: medRes.data.primaryPhysicianPhone || this.state.medicalProfile.primaryPhysicianPhone
+        };
+      }
+
+      // 5. Fetch emergency contacts
+      const contactsRes = await backendApi.get('/v1/registry/contacts');
+      if (contactsRes && contactsRes.status === 'SUCCESS' && Array.isArray(contactsRes.data) && contactsRes.data.length > 0) {
+        this.state.emergencyContacts = contactsRes.data.map((c, idx) => ({
+          id: `c${c.id || idx + 1}`,
+          name: c.name,
+          relation: c.relation,
+          phone: c.phone,
+          isPrimary: c.isPrimary
+        }));
+      }
+
+      this.saveToLocalStorage();
+      this.notify();
+    } catch (e) {
+      console.warn('[CLOUD-DB] syncFromBackend error:', e);
+    }
   }
 
   getInitialRoomId() {
@@ -654,8 +869,14 @@ class CloudDbEngine {
           this.state.selectedVehicleId = parsed.selectedVehicleId;
         }
         if (parsed.medicalProfile) {
-          this.state.medicalProfile = parsed.medicalProfile;
+          this.state.medicalProfile = {
+            ...parsed.medicalProfile,
+            allergies: normalizeArrayField(parsed.medicalProfile.allergies),
+            medicalConditions: normalizeArrayField(parsed.medicalProfile.medicalConditions)
+          };
         }
+        // Ensure active incident remains null on reload so fresh session starts normal
+        this.state.activeIncident = null;
         if (parsed.emergencyContacts && Array.isArray(parsed.emergencyContacts) && parsed.emergencyContacts.length > 0) {
           this.state.emergencyContacts = parsed.emergencyContacts;
         }

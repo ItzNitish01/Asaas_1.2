@@ -1036,7 +1036,7 @@ export default function GuardianPortalTab() {
             <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px', borderRadius: '10px' }}>
               <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>CRITICAL ALLERGIES</div>
               <div style={{ fontWeight: 700, color: '#f87171', fontSize: '0.88rem', marginTop: '2px' }}>
-                {patient.allergies?.join(', ') || 'None'}
+                {Array.isArray(patient.allergies) ? patient.allergies.join(', ') : (patient.allergies || 'None')}
               </div>
               <div style={{ fontSize: '0.74rem', color: '#94a3b8' }}>Alerted to Trauma ER</div>
             </div>

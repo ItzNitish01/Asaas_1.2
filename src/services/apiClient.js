@@ -9,20 +9,39 @@ class BackendApiService {
     this.isBackendOnline = false;
     this.wsClient = null;
     this.subscribers = new Set();
+    this.statusListeners = new Set();
     this.checkHealth();
+    // Periodic heartbeat every 10s
+    if (typeof window !== 'undefined') {
+      setInterval(() => this.checkHealth(), 10000);
+    }
+  }
+
+  onStatusChange(cb) {
+    this.statusListeners.add(cb);
+    cb(this.isBackendOnline);
+    return () => this.statusListeners.delete(cb);
+  }
+
+  notifyStatus() {
+    for (const cb of this.statusListeners) {
+      try { cb(this.isBackendOnline); } catch (e) {}
+    }
   }
 
   async checkHealth() {
+    const prev = this.isBackendOnline;
     try {
       const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(2500) });
-      if (res.ok) {
-        this.isBackendOnline = true;
+      this.isBackendOnline = res.ok;
+      if (res.ok && !this.wsClient) {
         this.connectWebSocket();
-      } else {
-        this.isBackendOnline = false;
       }
     } catch {
       this.isBackendOnline = false;
+    }
+    if (prev !== this.isBackendOnline) {
+      this.notifyStatus();
     }
     return this.isBackendOnline;
   }
@@ -117,3 +136,4 @@ class BackendApiService {
 
 export const backendApi = new BackendApiService();
 export default backendApi;
+

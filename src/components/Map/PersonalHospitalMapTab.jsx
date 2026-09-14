@@ -848,7 +848,7 @@ export default function PersonalHospitalMapTab({ selectedVehicle, medicalProfile
             <div style={{ background: '#070b12', padding: '10px', borderRadius: '8px', fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: '#94a3b8', lineHeight: 1.5 }}>
               <div>DRIVER: <strong style={{ color: '#fff' }}>{medicalProfile?.fullName}</strong></div>
               <div>BLOOD: <strong style={{ color: '#ef4444' }}>{medicalProfile?.bloodGroup}</strong></div>
-              <div>ALLERGIES: <span style={{ color: '#f59e0b' }}>{medicalProfile?.allergies?.join(', ') || 'None'}</span></div>
+              <div>ALLERGIES: <span style={{ color: '#f59e0b' }}>{Array.isArray(medicalProfile?.allergies) ? medicalProfile.allergies.join(', ') : (medicalProfile?.allergies || 'None')}</span></div>
               <div>SPEED: <strong style={{ color: '#fff' }}>{telemetry.speedKmh.toFixed(1)} km/h</strong></div>
               <div>G-FORCE: <strong style={{ color: '#10b981' }}>{telemetry.totalGForce.toFixed(2)}g</strong></div>
               <div>COORDS: <strong style={{ color: '#fbbf24' }}>{telemetry.lat.toFixed(4)}, {telemetry.lng.toFixed(4)}</strong></div>

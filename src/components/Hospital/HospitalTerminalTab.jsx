@@ -62,8 +62,9 @@ export default function HospitalTerminalTab() {
   const [doctorModal, setDoctorModal] = useState({ isOpen: false, mode: 'add', data: null });
   const [caseModal, setCaseModal] = useState({ isOpen: false, mode: 'add', data: null });
 
-  // Subscribe to Cloud DB
+  // Subscribe to Cloud DB and fetch current database records on mount
   useEffect(() => {
+    cloudDb.syncFromBackend?.();
     const unsubscribe = cloudDb.subscribe((newState) => {
       setDbState({ ...newState });
     });
@@ -847,7 +848,7 @@ export default function HospitalTerminalTab() {
                   CRITICAL ALLERGIES (DO NOT ADMINISTER):
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                  {patient.allergies?.map((allergy, i) => (
+                  {(Array.isArray(patient.allergies) ? patient.allergies : (typeof patient.allergies === 'string' ? patient.allergies.split(',').map(s => s.trim()).filter(Boolean) : [])).map((allergy, i) => (
                     <span key={i} style={{
                       background: 'rgba(239, 68, 68, 0.2)',
                       border: '1px solid rgba(239, 68, 68, 0.5)',
@@ -868,7 +869,7 @@ export default function HospitalTerminalTab() {
                   Chronic Medical Conditions:
                 </div>
                 <div style={{ fontSize: '0.82rem', color: '#e2e8f0', fontWeight: 500 }}>
-                  {patient.medicalConditions?.join(', ')}
+                  {Array.isArray(patient.medicalConditions) ? patient.medicalConditions.join(', ') : (patient.medicalConditions || 'None reported')}
                 </div>
               </div>
 

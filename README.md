@@ -1,100 +1,162 @@
-# 🚨 ASAAS — Automated System for Accident Alert & Safety
+# 🚨 ASAAS — Automated System for Accident Alert & Safety (v2.0)
 
-[![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-PostGIS-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-Upstash_TLS-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
 [![React](https://img.shields.io/badge/React-18.3-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
-[![Leaflet](https://img.shields.io/badge/Leaflet-1.9-199900?style=for-the-badge&logo=leaflet&logoColor=white)](https://leafletjs.com/)
-[![OSRM Routing](https://img.shields.io/badge/OSRM-Shortest_Road_Route-008080?style=for-the-badge)](https://project-osrm.org/)
-[![IoT ESP32](https://img.shields.io/badge/Hardware-ESP32_%7C_MPU6050_%7C_NEO--6M-E7352C?style=for-the-badge&logo=espressif&logoColor=white)](https://espressif.com/)
-[![License](https://img.shields.io/badge/License-Academic%20Project-yellow?style=for-the-badge)](#)
+[![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Docker](https://img.shields.io/badge/Docker-Production_Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
-> **ASAAS (Automated System for Accident Alert & Safety)** is an intelligent, IoT-integrated vehicular accident detection, live telemetry tracking, and multi-tier priority emergency response platform. It autonomously senses collision impacts and vehicle rollovers, provides a driver safety cancellation window to avoid false alarms, and dispatches automated priority alerts to the nearest Trauma Hospitals, Police Stations, and registered Emergency Family Guardians.
+> **ASAAS (Automated System for Accident Alert & Safety)** is an end-to-end, IoT-connected vehicular accident detection, live telemetry streaming, and multi-tier emergency dispatch platform. It autonomously detects collisions and vehicle rollovers in real time, provides a conscious-driver safety cancellation window to eliminate false alarms, and coordinates instantaneous, deterministic emergency dispatching across Trauma Hospitals, Police Jurisdictions, and Family Guardians.
 
 ---
 
 ## 📌 Table of Contents
-- [Key Features](#-key-features)
-- [Emergency Dispatch Workflow (Hospital → Police → Family)](#-emergency-dispatch-workflow)
 - [System Architecture](#-system-architecture)
-- [Hardware Node Specifications](#-hardware-node-specifications)
+- [Key Features](#-key-features)
+- [Multi-Tier Emergency Dispatch Flow](#-multi-tier-emergency-dispatch-flow)
+- [Hardware Node Specifications (IoT)](#-hardware-node-specifications-iot)
+- [Technology Stack](#-technology-stack)
 - [Project Directory Structure](#-project-directory-structure)
-- [Getting Started](#-getting-started)
-- [Live Telemetry & API Hub](#-live-telemetry--api-hub)
-- [Multi-Device Responsiveness](#-multi-device-responsiveness)
-- [Academic Viva & Evaluation Guide](#-academic-viva--evaluation-guide)
+- [Getting Started & Local Development](#-getting-started--local-development)
+- [Docker Production Deployment](#-docker-production-deployment)
+- [Cloud Production Deployment](#-cloud-production-deployment)
+- [API Reference & IoT Hub](#-api-reference--iot-hub)
+- [Role-Based Access Control (RBAC)](#-role-based-access-control-rbac)
+- [License](#-license)
+
+---
+
+## 🏛️ System Architecture
+
+```mermaid
+flowchart TD
+    subgraph IoT_Edge["🚗 IoT Edge Vehicle Node (ESP32)"]
+        IMU[MPU6050 6-Axis IMU] -->|Deceleration + Tilt| MCU[ESP32 Microcontroller]
+        GPS[NEO-6M GPS Module] -->|Lat / Lng / Speed| MCU
+        BTN[Emergency Pushbutton] -->|Manual SOS| MCU
+        MCU -->|Cellular / Wi-Fi REST| API_GATEWAY
+        MCU -->|Direct Fallback SMS| TELCO[GSM Network]
+    end
+
+    subgraph Backend_Gateway["⚡ High-Throughput Async Backend (FastAPI)"]
+        API_GATEWAY[FastAPI Ingestion Engine]
+        AUTH[JWT / RBAC Security Middleware]
+        SEV[AI Collision Severity Engine]
+        GEO[OSRM & Spatial Matching Service]
+        BUS[Redis Pub/Sub Bus / Upstash TLS]
+        WS[WebSocket Real-Time Manager]
+
+        API_GATEWAY --> AUTH
+        API_GATEWAY --> SEV
+        API_GATEWAY --> GEO
+        API_GATEWAY --> BUS
+        BUS --> WS
+    end
+
+    subgraph Data_Layer["💾 Resilient Dual-Engine Persistence"]
+        POSTGRES[(PostgreSQL + PostGIS)]
+        SQLITE[(SQLite Fallback Engine)]
+    end
+
+    subgraph Frontend_Clients["🖥️ Mission Control Web Clients (React + Vite)"]
+        HOSPITAL_UI[🏥 Trauma ER Terminal]
+        POLICE_UI[👮 Police Jurisdiction Command]
+        USER_UI[🚗 Driver Garage & Guardian Portal]
+        ADMIN_UI[🛡️ Super Admin Audit Hub]
+    end
+
+    API_GATEWAY <--> POSTGRES
+    API_GATEWAY -.->|Fallback if DB Unreachable| SQLITE
+    WS ==>|Sub-300ms Dispatch Broadcast| Frontend_Clients
+```
 
 ---
 
 ## 🌟 Key Features
 
-### 1. 💥 Autonomous Accident & Rollover Detection
-- **MPU6050 6-Axis Accelerometer & Gyroscope**: Continuous 100Hz sensing measuring 3-axis deceleration ($G_x, G_y, G_z$) and angular roll/pitch tilt.
+### 1. 💥 Autonomous Collision & Rollover Sensation
+- **Continuous 100Hz Sensing**: Tracks 3-axis kinetic acceleration ($G_x, G_y, G_z$) and angular roll/pitch tilt.
 - **Dual-Threshold Trigger**:
   - High-impact collision trigger ($> 4.0\text{g}$ dynamic impulse).
-  - Rollover crash trigger (Gyroscope roll angle $> 85^\circ$).
+  - Rollover crash trigger (Gyroscope tilt angle $> 85^\circ$).
 
-### 2. ⏳ Safety Cancellation Window & Hardware Circuit Breaker
-- **15-Second Abort Countdown**: Gives conscious occupants time to cancel minor fender-benders or dropped devices before triggering public emergency services.
-- **Physical Stop Switch Simulation**: Immediate circuit interruption that silences the local relay siren and aborts outbound dispatch.
-- **Audio Warning Siren**: Synthesized real-time dual-tone emergency buzzer using the HTML5 Web Audio API.
+### 2. 🧠 AI Collision Severity & Vector Reconstruction
+- **Kinetic Impulse Severity Index ($0 - 100$)**: Computed dynamically from vehicle mass, impact velocity, and vector magnitude.
+- **Triage Intelligence**: Generates diagnostic crash profiles for incoming trauma surgeons and provides casualty risk indicators.
 
-### 3. 🏥 3-Tier Priority Emergency Dispatch Pipeline
-1. **Tier 1 — Nearest Trauma Center ER**: Dispatches patient blood group, medical allergy dossier, exact GPS coordinates, ICU bed requirements, and live OSRM road route.
-2. **Tier 2 — Nearest Police Jurisdiction**: Notifies law enforcement control room for traffic clearance, route escort, and accident site perimeter securing.
-3. **Tier 3 — Family & Emergency Guardians**: Instant WhatsApp location broadcast (`wa.me`) and automated SMS text transmission.
+### 3. ⏳ 15-Second Safety Abort Window
+- **False-Alarm Mitigation**: Gives conscious vehicle occupants 15 seconds to abort non-critical fender benders before public emergency responders are notified.
+- **Synthesized Audio Alarm**: Dual-tone emergency siren generated through the HTML5 Web Audio API.
 
-### 4. 🗺️ Live Leaflet Map with Real OSRM Shortest Road Routing
-- Real-time Haversine distance calculations filtering emergency facilities within 5km, 10km, and 20km radii.
-- **OSRM (Open Source Routing Machine)** road geometry integration plotting real street routes (not simple straight lines) with accurate turn-by-turn road distance and real-time vehicular ETA.
-- Interactive floating Route HUD auto-bounded for mobile and desktop screens.
+### 4. 🏥 Deterministic 3-Tier Multi-Agency Dispatch
+1. **Tier 1 — Nearest Trauma Center ER**: Automatically reserves ICU beds, prepares compatible blood units based on driver ABHA dossier, and transmits real-time road routes.
+2. **Tier 2 — Nearest Police Station**: Auto-generates electronic FIR draft, activates green corridor routing, and details accident coordinates.
+3. **Tier 3 — Family Guardians**: Dispatches automated SMS alerts and WhatsApp SOS links with live Google Maps pins.
 
-### 5. 🩺 Emergency Medical Care & Paramedic Dossier
-- Complete medical identity: Blood group, severe allergies, chronic conditions, regular prescriptions, emergency contact numbers, and organ donor registry ID.
-- **High-Contrast Paramedic Mode**: One-tap high-visibility triage card tailored for 108 ambulance paramedics.
+### 5. 🗺️ Live Spatial Mapping & Real OSRM Road Routing
+- Real-time Haversine distance spatial queries.
+- **Open Source Routing Machine (OSRM)** integration plotting street navigation routes with turn-by-turn road distance and traffic-adjusted vehicular ETA.
 
-### 6. 🚗 Vehicle Garage & Digital Document Vault
-- Multi-vehicle registration management with ESP32 hardware device ID pairing.
-- Expiry date tracker for Registration Certificate (RC), Motor Insurance, Pollution Under Control (PUC), and Driving License with automated color-coded alerts.
-
-### 7. 🧠 AI Collision Severity & Vector Reconstruction
-- Neural collision severity index ($0 - 100$) derived from multi-axis impulse curves.
-- Exportable official AI Diagnostic Incident PDF report for insurance, legal, and hospital triage use.
+### 6. 🛡️ Enterprise Security & Dual-Engine Persistence
+- **Dual-Engine DB Architecture**: Automatically utilizes PostgreSQL + PostGIS when available, with automatic zero-configuration SQLite fallback.
+- **Redis Pub/Sub Bus**: Leverages cloud Redis (Upstash TLS) for low-latency event distribution with built-in in-memory fallback.
+- **JWT & Role-Based Access Control**: Strict privilege separation for hospital staff, police officers, vehicle owners, and administrators.
 
 ---
 
-## 🚨 Emergency Dispatch Workflow
+## 🚨 Multi-Tier Emergency Dispatch Flow
 
 ```mermaid
-flowchart TD
-    A[🚗 Vehicle in Motion] --> B[💥 Impact or Rollover Detected]
-    B --> C[🔊 Relay Siren Tripped + Local Alarm Active]
-    C --> D[⏳ 15s Safety Cancellation Window Initiated]
-    
-    D -->|Driver presses Stop Switch| E[🛑 False Alarm Aborted - Dispatch Terminated]
-    
-    D -->|Countdown Reaches 0s| F[🚨 Zero Override Received: Commit Priority Dispatch]
-    
-    F --> G[🏥 Priority 1: Nearest Trauma Center ER]
-    G -->|Road Route + ETA + Patient Blood Profile| G1[ER Triage & ICU Bed Staged]
-    
-    F --> H[👮 Priority 2: Nearest Police Command Post]
-    H -->|Coordinates + Node ID| H1[Traffic Clearance & Highway Patrol Dispatched]
-    
-    F --> I[👨‍👩‍👧 Priority 3: Registered Family Guardians]
-    I -->|WhatsApp SOS + SMS Location Link| I1[Family Informed with Live Google Maps Pin]
+sequenceDiagram
+    autonumber
+    participant Vehicle as 🚗 ESP32 Vehicle Node
+    participant Backend as ⚡ FastAPI Backend
+    participant Redis as 🔴 Redis Pub/Sub
+    participant Hospital as 🏥 Hospital ER Terminal
+    participant Police as 👮 Police Control Room
+    participant Family as 👨‍👩‍👧 Family Guardians
+
+    Vehicle->>Backend: POST /api/v1/telemetry (Collision Detected > 4.5g)
+    Backend->>Backend: Compute AI Severity Score & Fetch Nearest Facilities
+    Backend->>Redis: Publish INCIDENT_TRIGGERED
+    Redis->>Hospital: Real-Time WebSocket Push (Blood Type, ICU Staged, Route)
+    Redis->>Police: Real-Time WebSocket Push (Coordinates, FIR Generated)
+    Backend->>Family: Dispatch Emergency SMS & Location Link
+    Hospital-->>Backend: Acknowledge & Stage Trauma Bay
 ```
 
 ---
 
-## 🛠️ Hardware Node Specifications
+## 🛠️ Hardware Node Specifications (IoT)
 
 | Component | Hardware Model | Interface | Function in ASAAS |
 | :--- | :--- | :--- | :--- |
-| **Microcontroller** | ESP32 NodeMCU / ESP-WROOM-32 | Wi-Fi / BLE / UART | Core IoT processing, JSON payload packaging, REST telemetry transmission |
-| **Crash & Tilt Sensor**| MPU6050 6-Axis IMU | I2C (`SDA: GPIO 21`, `SCL: GPIO 22`) | Deceleration impact ($g$) and vehicle roll/pitch angle detection |
-| **Satellite Positioning**| NEO-6M GPS Receiver | UART (`TX: GPIO 16`, `RX: GPIO 17`) | Real-time latitude, longitude, speed (km/h), and satellite lock |
-| **Cellular Communicator**| SIM800L GSM/GPRS Module | UART (`TX: GPIO 26`, `RX: GPIO 27`) | Fallback SMS alert and cellular telemetry transmission |
-| **Local Siren Alert** | 5V Single-Channel Relay Module | Digital Out (`GPIO 25`) | Controls vehicle horn / high-decibel piezobuzzer |
-| **Circuit Breaker** | Momentary Push Button | Digital In Pull-Up (`GPIO 33`) | Driver emergency cancellation switch |
+| **Microcontroller** | ESP32 NodeMCU / ESP-WROOM-32 | Wi-Fi / BLE / UART | Edge processing, JSON payload packaging, REST telemetry |
+| **IMU Sensor** | MPU6050 6-Axis Gyroscope | I2C (`SDA: GPIO 21`, `SCL: GPIO 22`) | Deceleration impact ($g$) and vehicle roll/pitch angle detection |
+| **GPS Receiver** | NEO-6M GPS Module | UART (`TX: GPIO 16`, `RX: GPIO 17`) | Real-time latitude, longitude, speed, and satellite lock |
+| **Cellular Modem** | SIM800L GSM/GPRS Module | UART (`TX: GPIO 26`, `RX: GPIO 27`) | Fallback SMS alert and cellular telemetry transmission |
+| **Local Siren** | 5V Relay Module + Buzzer | Digital Out (`GPIO 25`) | In-cabin audible collision alert |
+| **Abort Switch** | Momentary Pushbutton | Digital In Pull-Up (`GPIO 33`) | Driver emergency cancellation switch |
+
+---
+
+## 💻 Technology Stack
+
+### Backend & Cloud Infrastructure
+- **Core Framework**: Python 3.11+, FastAPI, Uvicorn (ASGI)
+- **Database Engine**: PostgreSQL + PostGIS / SQLite (`aiosqlite`) via SQLAlchemy 2.0 Async ORM
+- **Event Bus**: Redis (`redis.asyncio` with TLS support for Upstash)
+- **Authentication**: JWT (JSON Web Tokens) with passlib bcrypt hashing
+- **Geospatial & Routing**: OSRM (Open Source Routing Machine) + Haversine Vector Math
+- **External Communications**: Twilio SMS API & MQTT Hardware Bridge
+
+### Frontend Client
+- **Framework**: React 18 with Vite
+- **Mapping & GIS**: Leaflet & React-Leaflet
+- **Data Visualization**: Chart.js & React-Chartjs-2
+- **Icons & Design**: Lucide Icons, Glassmorphism CSS design system
 
 ---
 
@@ -102,133 +164,168 @@ flowchart TD
 
 ```text
 Asaas/
-├── index.html                     # HTML5 entry with responsive viewport & meta tags
-├── package.json                   # Project dependencies and build scripts
-├── vercel.json                    # Vercel SPA deployment configuration
-├── vite.config.js                 # Vite bundler configuration with CORS & proxy
-├── PRESENTATION_AND_VIVA_GUIDE.md # Complete viva defense & presentation master guide
-├── README.md                      # Comprehensive project documentation
-├── src/
-│   ├── App.jsx                    # Root state controller & responsive layout
-│   ├── main.jsx                   # React DOM entrypoint
-│   ├── index.css                  # Bespoke emergency dispatch design system & responsive CSS
-│   ├── components/
-│   │   ├── Navbar.jsx             # Top bar with hamburger menu, vehicle switcher & SOS button
-│   │   ├── Sidebar.jsx            # Dual-mode desktop sidebar & mobile slide-out drawer
-│   │   ├── TelemetryBar.jsx       # Horizontal momentum-scrolling hardware metrics ticker
-│   │   ├── Dashboard/
-│   │   │   └── DashboardTab.jsx   # Live telemetry gauges, test deck & collision simulation
-│   │   ├── Emergency/
-│   │   │   └── EmergencySosModal.jsx # Priority dispatch modal with Web Audio siren
-│   │   ├── Map/
-│   │   │   ├── AccidentMapTab.jsx # Live Leaflet accident tracking map & OSRM route
-│   │   │   └── PersonalHospitalMapTab.jsx # Nearest hospital/police locator with filters
-│   │   ├── Medical/
-│   │   │   └── MedicalCareTab.jsx # Emergency medical profile & paramedic high-contrast view
-│   │   ├── Vehicles/
-│   │   │   └── VehicleManagerTab.jsx # Vehicle registration & digital document vault
-│   │   ├── Contacts/
-│   │   │   └── EmergencyContactsTab.jsx # Guardian roster with WhatsApp & SMS SOS
-│   │   ├── AIAnalysis/
-│   │   │   └── AiAnalysisTab.jsx  # AI collision severity curves & PDF report exporter
-│   │   ├── Architecture/
-│   │   │   └── ArchitectureTab.jsx # Interactive interactive system dataflow schematic
-│   │   └── ApiHub/
-│   │   │   └── Esp32ApiHubTab.jsx # JSON telemetry sandbox & ready-to-flash Arduino firmware
+├── backend/                       # Production FastAPI Asynchronous Backend
+│   ├── Dockerfile                 # Multi-stage container definition
+│   ├── requirements.txt           # Python dependencies
+│   ├── app/
+│   │   ├── main.py                # FastAPI entrypoint, lifespan, CORS & WebSockets
+│   │   ├── core/                  # Database engines, Redis bus, security & config
+│   │   ├── models/                # SQLAlchemy ORM models (Incident, Vehicle, Hospital, etc.)
+│   │   ├── schemas/               # Pydantic validation schemas
+│   │   ├── services/              # AI severity calculation, GIS routing, SMS dispatch
+│   │   └── api/v1/                # Modular REST route controllers
+│   └── database/
+│       └── seed.py                # Database population script (facilities, demo accounts)
+├── src/                           # React 18 Frontend Application
+│   ├── App.jsx                    # Root view controller & navigation state
+│   ├── components/                # Specialized command terminals & user interfaces
+│   │   ├── Dashboard/             # Live sensor telemetry HUD & test crash deck
+│   │   ├── Emergency/             # Priority dispatch countdown modal & Web Audio siren
+│   │   ├── Hospital/              # Trauma ER dashboard & ICU bed manager
+│   │   ├── Map/                   # GIS accident map & turn-by-turn road route
+│   │   ├── Medical/               # ABHA digital medical health record
+│   │   ├── Vehicles/              # Digital vehicle garage & document vault
+│   │   ├── Guardian/              # Emergency contact roster & guardian portal
+│   │   ├── AIAnalysis/            # Collision vector diagnostics & PDF report exporter
+│   │   └── ApiHub/                # Hardware firmware (.ino) & REST telemetry sandbox
 │   └── services/
-│       ├── geoService.js          # Haversine distance algorithm & OSRM road route fetching
-│       ├── mockData.js            # Initial vehicles, hospitals, police stations & contacts
-│       └── telemetryEngine.js     # Physics simulation engine for speed, g-force & tilt
+│       ├── apiClient.js           # Axios/Fetch API client with auth interceptors
+│       ├── cloudDbEngine.js       # Live state synchronization engine
+│       └── liveSocket.js          # Resilient WebSocket connection manager
+├── docker-compose.yml             # Full-stack multi-container composition
+├── Dockerfile.frontend            # Production Nginx frontend image build
+├── nginx.conf                     # Reverse proxy for React SPA, API, and WebSockets
+├── render.yaml                    # Production 1-click cloud configuration
+├── vercel.json                    # Vercel SPA routing rewrite specification
+└── package.json                   # Frontend dependencies and build scripts
 ```
 
 ---
 
-## 🚀 Getting Started
-
-### Prerequisites
-- [Node.js](https://nodejs.org/) version `18.0` or higher
-- [npm](https://www.npmjs.com/) (bundled with Node.js)
+## 🚀 Getting Started & Local Development
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/Aaradhya062007/Asaas.git
-cd Asaas
+git clone https://github.com/ItzNitish01/Asaas_1.2.git
+cd Asaas_1.2
 ```
 
-### 2. Install Dependencies
+### 2. Backend Setup
 ```bash
+cd backend
+python -m venv venv
+
+# Windows
+.\venv\Scripts\activate
+# Linux/macOS
+source venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+#### Configure Environment Variables
+Copy `.env.example` to `.env`:
+```bash
+cp .env.example .env
+```
+*(Leave `DATABASE_URL` and `REDIS_URL` blank to run with zero-setup SQLite and in-memory pub/sub fallbacks, or connect to Neon PostgreSQL and Upstash Redis).*
+
+#### Seed Demo Facilities & Accounts
+```bash
+python -m database.seed
+```
+
+#### Start FastAPI Backend
+```bash
+uvicorn app.main:app --port 5000 --reload
+```
+The API is live at `http://localhost:5000` (Interactive Swagger Docs: `http://localhost:5000/docs`).
+
+### 3. Frontend Setup
+In a separate terminal window:
+```bash
+# In project root
 npm install
-```
-
-### 3. Run Development Server
-```bash
 npm run dev
 ```
-The application will launch locally at `http://localhost:5173`.
-
-### 4. Build for Production
-```bash
-npm run build
-```
-The optimized, minified production assets will be generated in the `dist/` directory.
+Open `http://localhost:5173` in your browser.
 
 ---
 
-## 🔌 Live Telemetry & API Hub
+## 🐳 Docker Production Deployment
 
-The platform supports integration with real hardware through REST and WebSocket endpoints:
+Run the complete full-stack environment with a single command:
+```bash
+docker-compose up -d --build
+```
+This deploys:
+- **FastAPI Backend**: `http://localhost:5000`
+- **React Frontend (Nginx)**: `http://localhost:80`
+- **PostgreSQL + PostGIS**: `localhost:5432`
+- **Redis Alpine**: `localhost:6379`
 
-### Inbound Sensor Telemetry Payload Specification
+---
+
+## ☁️ Cloud Production Deployment
+
+- **Backend (Render / Railway / Fly.io)**:
+  - Root directory: `backend`
+  - Build command: `pip install -r requirements.txt`
+  - Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+  - Pre-configured [`render.yaml`](./render.yaml) provided for instant deployment.
+- **Frontend (Vercel / Netlify / Cloudflare Pages)**:
+  - Root directory: `./`
+  - Build command: `npm run build`
+  - Output directory: `dist`
+  - Pre-configured [`vercel.json`](./vercel.json) handles client-side SPA routing rewrites.
+
+---
+
+## 🔌 API Reference & IoT Hub
+
+The backend exposes standardized endpoints for IoT microcontrollers and third-party dispatch systems:
+
+### Inbound Sensor Telemetry Payload
 ```http
 POST /api/v1/telemetry
 Content-Type: application/json
 
 {
-  "espDeviceId": "ESP32-ASAAS-NODE-01",
-  "vehicleReg": "HR26-DK-8392",
-  "lat": 28.45950,
-  "lng": 77.02660,
-  "speedKmh": 64.2,
-  "accelX": 0.12,
-  "accelY": -0.05,
-  "accelZ": 0.98,
-  "totalGForce": 0.99,
-  "pitchDeg": 1.2,
-  "rollDeg": -0.8,
-  "impactDetected": false,
-  "rolloverDetected": false,
-  "batteryPercent": 94,
-  "batteryVoltage": "12.6V",
-  "gpsSatellites": 12,
-  "gsmSignalDbm": -68
+  "device_id": "ESP32-ASAAS-01",
+  "speed_kmh": 68.4,
+  "accel_x": 0.12,
+  "accel_y": -0.05,
+  "accel_z": 4.82,
+  "pitch_deg": 4.1,
+  "roll_deg": -1.2,
+  "gps": {
+    "lat": 28.4595,
+    "lng": 77.0266,
+    "sats": 9
+  },
+  "battery_percent": 95,
+  "gsm_dbm": -65,
+  "sos_button": "RELEASED"
 }
 ```
 
-A complete, ready-to-flash Arduino C++ firmware sketch (`.ino`) is available in the **ESP32 API Hub** tab within the dashboard.
+A complete, ready-to-flash Arduino C++ firmware sketch (`.ino`) is available in the **ESP32 API Hub** tab inside the dashboard.
 
 ---
 
-## 📱 Multi-Device Responsiveness
+## 👥 Role-Based Access Control (RBAC)
 
-ASAAS is engineered from the ground up to provide a native application feel across all form factors:
-- **Mobile Phones (360px – 480px)**: Slide-out drawer navigation, sticky 1-tap horizontal tab strip, vertical-stacking priority responder cards, and touch-scrolling telemetry bars.
-- **Tablets & iPads (768px – 1024px)**: Adaptive grid layouts, responsive Leaflet map heights (`clamp(380px, 55vh, 520px)`), and auto-bounded floating route HUDs.
-- **Desktops & Laptops (1025px+)**: Dual-pane split layouts, fixed hardware node sidebar, and real-time telemetry streaming consoles.
+The platform supports distinct portal experiences tailored to emergency responders:
 
----
-
-## 🎓 Academic Viva & Evaluation Guide
-
-For university project viva defenses, teacher reviews, and evaluation presentations, refer to the complete guide:
-📄 **[`PRESENTATION_AND_VIVA_GUIDE.md`](./PRESENTATION_AND_VIVA_GUIDE.md)**
-
-It covers:
-- The 1-minute elevator pitch
-- Answers to tricky examiner questions (false positive mitigation, network blind spots, power loss handling)
-- 5-step live demonstration script
-- Future scope & production roadmap
+| Role | Default Username | Password | Operational Access |
+|---|---|---|---|
+| **SUPER_ADMIN** | `admin` | `Admin@1234` | Full system audit, IoT device registry, fleet metrics |
+| **HOSPITAL_ER** | `hospital_er` | `Hospital@1234` | Trauma intake console, live patient dossiers, ICU reservation |
+| **POLICE_CONTROL** | `police_ctrl` | `Police@1234` | PCR interceptor tracking, automated FIR drafts, green corridor |
+| **VEHICLE_OWNER** | `vehicle_owner` | `Owner@1234` | Personal vehicle garage, ABHA health records, guardian roster |
 
 ---
 
 ## 📄 License
-Developed for Academic Project Evaluation & Research under the **ASAAS Initiative**.
+Developed for research and real-world deployment under the **ASAAS Emergency Response Initiative**.
+All rights reserved.

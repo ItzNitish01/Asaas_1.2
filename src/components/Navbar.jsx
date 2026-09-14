@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { 
   ShieldAlert, 
   Car, 
@@ -15,9 +16,12 @@ import {
   Shield,
   Building2,
   PhoneCall,
-  Users
+  Users,
+  Server,
+  Database
 } from 'lucide-react';
 import cloudDb from '../services/cloudDbEngine';
+import { backendApi } from '../services/apiClient';
 
 export default function Navbar({ 
   vehicles, 
@@ -38,6 +42,14 @@ export default function Navbar({
   const isPolice = role === 'Police Command' || role === 'Police / Traffic Control';
   const isGuardian = role === 'Guardian';
   const isVehicleOwner = !isHospital && !isPolice && !isGuardian;
+
+  const [backendOnline, setBackendOnline] = useState(backendApi.isBackendOnline);
+
+  useEffect(() => {
+    return backendApi.onStatusChange((status) => {
+      setBackendOnline(status);
+    });
+  }, []);
 
   return (
     <header className="navbar-container">
@@ -309,6 +321,34 @@ export default function Navbar({
               : isGuardian ? 'FAMILY GUARDIAN'
               : 'VEHICLE COCKPIT'}
           </span>
+        </div>
+
+        {/* Live Backend & Database Engine Status Indicator */}
+        <div 
+          title={backendOnline ? "ASAAS Real-Time Production Backend & Database: CONNECTED (ws://localhost:5000/ws)" : "Backend Server: Standalone Client Mode (Local In-Memory & Cloud MQTT Active)"}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+            background: backendOnline ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+            border: `1px solid ${backendOnline ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
+            borderRadius: '20px',
+            padding: '5px 10px',
+            fontSize: '0.72rem',
+            fontWeight: 700,
+            color: backendOnline ? '#34d399' : '#fbbf24',
+            flexShrink: 0
+          }}
+        >
+          <div style={{
+            width: '7px',
+            height: '7px',
+            borderRadius: '50%',
+            background: backendOnline ? '#10b981' : '#f59e0b',
+            boxShadow: backendOnline ? '0 0 8px #10b981' : 'none'
+          }}></div>
+          <Database size={13} color={backendOnline ? "#10b981" : "#f59e0b"} />
+          <span className="btn-text-hide-xs">{backendOnline ? 'DB LIVE' : 'CLIENT SYNC'}</span>
         </div>
 
         {/* Worldwide Room Sync Button */}

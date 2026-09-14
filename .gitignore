@@ -17,13 +17,16 @@ yarn-error.log*
 venv/
 env/
 
-# Python / Django
+# Python / Django / SQLite
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 db.sqlite3
 db.sqlite3-journal
+*.db
+*.sqlite
+*.sqlite3
 media/
 staticfiles/
 _archive_legacy_bookmyseat/
@@ -43,3 +46,13 @@ Thumbs.db
 # Binaries
 *.exe
 cloudflared.exe
+
+# Internal Docs & User Notes (Not for public repo)
+TODO.md
+*TODO*
+TODO*
+PRESENTATION_AND_VIVA_GUIDE.md
+*presentation*
+*viva*
+scratch/
+

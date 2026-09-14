@@ -582,7 +582,7 @@ export default function EmergencySosModal({
         }}>
           <Heart size={14} />
           <span>
-            <strong>Transmitted Dossier:</strong> Blood Group: <strong>{medicalProfile?.bloodGroup}</strong> &bull; Known Allergies: <strong>{medicalProfile?.allergies?.join(', ') || 'None'}</strong> &bull; Organ Donor: <strong>{medicalProfile?.organDonor ? 'Yes' : 'No'}</strong>
+            <strong>Transmitted Dossier:</strong> Blood Group: <strong>{medicalProfile?.bloodGroup}</strong> &bull; Known Allergies: <strong>{Array.isArray(medicalProfile?.allergies) ? medicalProfile.allergies.join(', ') : (medicalProfile?.allergies || 'None')}</strong> &bull; Organ Donor: <strong>{medicalProfile?.organDonor ? 'Yes' : 'No'}</strong>
           </span>
         </div>
 
