@@ -48,7 +48,9 @@ class CloudDbEngine {
     this.connectionStatus = 'connecting';
     this.listeners = new Set();
     this.clientId = 'client_' + Math.random().toString(16).substring(2, 10);
-    this.lastBroadcastTime = 0;
+    this.brokerList = [PRIMARY_BROKER, FALLBACK_BROKER];
+    this.currentBrokerIndex = 0;
+    this.brokerFailures = 0;
 
     // Default Initial State
     this.state = {
@@ -396,19 +398,24 @@ class CloudDbEngine {
   }
 
   connectCloudBroker() {
-    const brokerUrl = PRIMARY_BROKER;
+    const brokerUrl = this.brokerList[this.currentBrokerIndex % this.brokerList.length];
     const options = {
       clientId: `asaas_web_${this.clientId}`,
       clean: true,
-      connectTimeout: 5000,
+      connectTimeout: 7000,
       reconnectPeriod: 3000,
-      keepalive: 30
+      keepalive: 45
     };
 
     try {
+      if (this.client) {
+        try { this.client.end(true); } catch (e) {}
+      }
+
       this.client = mqtt.connect(brokerUrl, options);
 
       this.client.on('connect', () => {
+        this.brokerFailures = 0;
         this.connectionStatus = 'connected';
         this.state.connectionStatus = 'connected';
         this.notify();
@@ -434,6 +441,27 @@ class CloudDbEngine {
             this.publishToCloud(`${baseTopic}/sync_req`, { requesterId: this.clientId });
           }
         });
+      });
+
+      this.client.on('reconnect', () => {
+        this.connectionStatus = 'reconnecting';
+        this.state.connectionStatus = 'reconnecting';
+        this.brokerFailures++;
+        if (this.brokerFailures >= 4) {
+          // Rotate to next broker on repeated reconnect failures
+          console.warn(`[MQTT] Broker ${brokerUrl} failing, switching to fallback broker...`);
+          this.currentBrokerIndex++;
+          this.brokerFailures = 0;
+          setTimeout(() => this.connectCloudBroker(), 500);
+        } else {
+          this.notify();
+        }
+      });
+
+      this.client.on('offline', () => {
+        this.connectionStatus = 'reconnecting';
+        this.state.connectionStatus = 'reconnecting';
+        this.notify();
       });
 
       this.client.on('message', (topic, message) => {
@@ -472,15 +500,21 @@ class CloudDbEngine {
       });
 
       this.client.on('error', (err) => {
-        console.warn('Cloud broker connection warning:', err);
+        console.warn('Cloud broker warning:', err?.message || err);
         this.connectionStatus = 'reconnecting';
         this.state.connectionStatus = 'reconnecting';
         this.notify();
       });
 
       this.client.on('close', () => {
-        this.connectionStatus = 'disconnected';
-        this.state.connectionStatus = 'disconnected';
+        // If client is still attempting to reconnect, show reconnecting rather than disconnected
+        if (this.client && !this.client.disconnecting && !this.client.disconnected) {
+          this.connectionStatus = 'reconnecting';
+          this.state.connectionStatus = 'reconnecting';
+        } else {
+          this.connectionStatus = 'disconnected';
+          this.state.connectionStatus = 'disconnected';
+        }
         this.notify();
       });
     } catch (e) {

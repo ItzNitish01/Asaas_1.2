@@ -78,8 +78,8 @@ _is_sqlite = "sqlite" in _engine_url
 engine = create_async_engine(
     _engine_url,
     echo=settings.debug,
-    # PostgreSQL-specific: keep connections alive
-    **({} if _is_sqlite else {"pool_pre_ping": True, "pool_size": 10, "max_overflow": 20}),
+    # PostgreSQL-specific: keep connections alive and recycle idle pool connections
+    **({} if _is_sqlite else {"pool_pre_ping": True, "pool_size": 10, "max_overflow": 20, "pool_recycle": 300}),
 )
 
 AsyncSessionLocal = async_sessionmaker(

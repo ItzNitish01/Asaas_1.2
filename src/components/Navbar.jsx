@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import cloudDb from '../services/cloudDbEngine';
 import { backendApi } from '../services/apiClient';
+import DatabaseStatusModal from './Database/DatabaseStatusModal';
 
 export default function Navbar({ 
   vehicles, 
@@ -45,6 +46,7 @@ export default function Navbar({
   const isVehicleOwner = !isSuperAdmin && !isHospital && !isPolice && !isGuardian;
 
   const [backendOnline, setBackendOnline] = useState(backendApi.isBackendOnline);
+  const [isDbModalOpen, setIsDbModalOpen] = useState(false);
 
   useEffect(() => {
     return backendApi.onStatusChange((status) => {
@@ -349,9 +351,10 @@ export default function Navbar({
         </div>
 
         {/* Live Backend & Database Engine Status Indicator */}
-        <div 
+        <button 
+          onClick={() => setIsDbModalOpen(true)}
           className="navbar-db-badge desktop-tablet-only"
-          title={backendOnline ? "ASAAS Real-Time Production Backend & Database: CONNECTED" : "Backend Server: Standalone Client Mode"}
+          title={backendOnline ? "ASAAS Production Backend & Database: CONNECTED (Click to manage)" : "Backend Server: Standalone Client Mode (Click to connect)"}
           style={{
             alignItems: 'center',
             gap: '5px',
@@ -362,7 +365,9 @@ export default function Navbar({
             fontSize: '0.72rem',
             fontWeight: 700,
             color: backendOnline ? '#34d399' : '#fbbf24',
-            flexShrink: 0
+            cursor: 'pointer',
+            flexShrink: 0,
+            transition: 'all 0.2s ease'
           }}
         >
           <div style={{
@@ -374,7 +379,7 @@ export default function Navbar({
           }}></div>
           <Database size={13} color={backendOnline ? "#10b981" : "#f59e0b"} />
           <span className="btn-text-hide-xs">{backendOnline ? 'DB LIVE' : 'CLIENT SYNC'}</span>
-        </div>
+        </button>
 
         {/* Worldwide Room Sync Button */}
         <button
@@ -484,6 +489,12 @@ export default function Navbar({
           )}
         </div>
       </div>
+
+      {/* Database & Gateway Connection Manager Modal */}
+      <DatabaseStatusModal 
+        isOpen={isDbModalOpen} 
+        onClose={() => setIsDbModalOpen(false)} 
+      />
     </header>
   );
 }
