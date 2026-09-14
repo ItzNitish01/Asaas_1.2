@@ -283,19 +283,24 @@ This deploys:
 
 ## 🔌 API Reference & IoT Hub
 
-The backend exposes standardized endpoints for IoT microcontrollers and third-party dispatch systems:
+The backend exposes a high-throughput, async REST API and bi-directional WebSocket interface documented interactively via OpenAPI / Swagger at `http://localhost:5000/docs`.
 
-### Inbound Sensor Telemetry Payload
+### 1. Inbound IoT Telemetry Specification (`POST /api/v1/telemetry`)
+Microcontrollers (ESP32, Raspberry Pi, Arduino with GSM/Wi-Fi) push sensor telemetry packets every 500ms–1000ms. If peak deceleration exceeds **4.0g** or rollover tilt exceeds **85°**, the backend autonomously triggers a critical incident.
+
+#### Request Payload
 ```http
 POST /api/v1/telemetry
 Content-Type: application/json
 
 {
   "device_id": "ESP32-ASAAS-01",
+  "api_key": "optional_pre_shared_device_key",
   "speed_kmh": 68.4,
-  "accel_x": 0.12,
-  "accel_y": -0.05,
+  "accel_x": 0.15,
+  "accel_y": -0.08,
   "accel_z": 4.82,
+  "total_g": 4.82,
   "pitch_deg": 4.1,
   "roll_deg": -1.2,
   "gps": {
@@ -309,20 +314,110 @@ Content-Type: application/json
 }
 ```
 
-A complete, ready-to-flash Arduino C++ firmware sketch (`.ino`) is available in the **ESP32 API Hub** tab inside the dashboard.
+#### Response Payload
+```json
+{
+  "status": "OK",
+  "message": "Telemetry processed",
+  "emergency_triggered": true,
+  "incident_id": "INC-20260915-7A9B"
+}
+```
+
+---
+
+### 2. Real-Time WebSocket Protocol (`ws://localhost:5000/ws`)
+Emergency operations centers, trauma bay terminals, and police dispatchers maintain persistent WebSocket channels for sub-300ms event distribution.
+
+- **Connection URL**: `ws://localhost:5000/ws?role={ROLE}&token={JWT_TOKEN}`
+- **Heartbeat**: Send `"ping"`, server replies `{"type":"pong"}`.
+- **Broadcast Events**:
+  | Event Channel | Payload Description | Target Audience |
+  |---|---|---|
+  | `TELEMETRY_STREAM` | Live vehicle GPS coordinates, speed, G-force, and tilt vector | Vehicle Garage & Admin Fleet Map |
+  | `INCIDENT_TRIGGERED` | Crash impact data, AI severity score, patient ABHA dossier, and nearest hospital/police routes | Trauma ER, Police Control, Guardians |
+  | `INCIDENT_ABORTED` | Driver-confirmed false alarm cancellation notification | All Connected Responders |
+  | `DISPATCH_UPDATE` | Ambulance en-route ETA, ICU bed reservation, and PCR status changes | Active Incident Handlers |
+
+---
+
+### 3. Core REST API Endpoints
+
+#### Authentication & Identity
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `POST` | `/api/v1/auth/login` | Public | Authenticates username/password; returns JWT access token and sets HttpOnly cookie |
+| `POST` | `/api/v1/auth/register` | Public | Self-onboarding for new vehicle owners |
+| `GET` | `/api/v1/auth/me` | Authenticated | Retrieves current authenticated user profile and active role |
+
+#### Telemetry & IoT
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `POST` | `/api/v1/telemetry` | IoT / Public | Ingests sensor packet; calculates total G-force and evaluates crash thresholds |
+| `GET` | `/api/v1/telemetry/recent` | Authenticated | Returns the last 50 telemetry packets logged for the user's vehicles |
+
+#### Emergency Incidents & Dispatch
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `POST` | `/api/v1/incidents/trigger` | Authenticated / IoT | Manually or programmatically triggers an emergency incident |
+| `POST` | `/api/v1/incidents/abort` | Authenticated | Cancels an active incident during the 15-second safety window |
+| `GET` | `/api/v1/incidents/active` | Public / Responders | Returns the currently active emergency incident and dispatch status |
+| `GET` | `/api/v1/incidents/all` | `SUPER_ADMIN` | Comprehensive historical audit trail of all recorded incidents |
+
+#### Spatial Facilities & Jurisdictions
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `GET` | `/api/v1/hospitals/all` | Public / Responders | Returns all registered trauma hospitals with live ICU bed and blood bank statuses |
+| `GET` | `/api/v1/hospitals/nearest` | Public / Responders | Geospatial k-NN query returning nearest trauma centers sorted by road distance/ETA |
+| `GET` | `/api/v1/police/all` | Public / Responders | Returns all regional police command stations and patrol interceptor counts |
+| `GET` | `/api/v1/police/nearest` | Public / Responders | Geospatial query returning nearest police stations to a specific GPS coordinate |
+
+#### Registry & Profiles
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `GET` / `POST` | `/api/v1/registry/vehicles` | `VEHICLE_OWNER` / Admin | Lists or registers vehicles and pairs hardware device IDs |
+| `GET` / `PUT` | `/api/v1/registry/medical` | `VEHICLE_OWNER` / Admin | Reads or updates the driver's ABHA emergency medical card |
+| `GET` / `POST` | `/api/v1/registry/contacts` | `VEHICLE_OWNER` / Admin | Manages emergency family guardian contact numbers for SMS/WhatsApp alerts |
+
+#### System Health
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `GET` | `/api/health` | Public | Returns service status, active WebSocket connection count, and server UTC timestamp |
 
 ---
 
 ## 👥 Role-Based Access Control (RBAC)
 
-The platform supports distinct portal experiences tailored to emergency responders:
+ASAAS enforces strict privilege separation via **JSON Web Tokens (HS256)** and FastAPI dependency injection. Authentication tokens are accepted via the `Authorization: Bearer <token>` header as well as secure `HttpOnly` browser cookies.
 
-| Role | Default Username | Password | Operational Access |
+### 1. Access Permission Matrix
+
+| Capability / Operational Surface | `SUPER_ADMIN` | `HOSPITAL_ER` | `POLICE_CONTROL` | `VEHICLE_OWNER` |
+|---|:---:|:---:|:---:|:---:|
+| **Vehicle Telemetry Streaming** | Full Fleet | Incident Only | Incident Only | Owned Vehicles |
+| **Trauma ER Dashboard & ICU Bed Staging** | View | Full Control | Read-Only | - |
+| **Police PCR Dispatch & Green Corridor** | View | Read-Only | Full Control | - |
+| **Electronic FIR Generation** | Audit | - | Create / Sign | - |
+| **ABHA Medical Card Editing** | Audit | Read-Only | - | Full Control |
+| **Emergency Guardian Roster Management** | Audit | Read-Only | - | Full Control |
+| **Global Incident History Audit** | Full Control | Assigned | Assigned | Personal |
+| **System Health & Gateway Configuration** | Full Control | - | - | - |
+
+---
+
+### 2. Pre-Configured Demonstration Accounts
+
+All demo accounts are pre-seeded with secure bcrypt-hashed passwords in the database:
+
+| Role | Username | Password | Default Workspace View |
 |---|---|---|---|
-| **SUPER_ADMIN** | `admin` | `Admin@1234` | Full system audit, IoT device registry, fleet metrics |
-| **HOSPITAL_ER** | `hospital_er` | `Hospital@1234` | Trauma intake console, live patient dossiers, ICU reservation |
-| **POLICE_CONTROL** | `police_ctrl` | `Police@1234` | PCR interceptor tracking, automated FIR drafts, green corridor |
-| **VEHICLE_OWNER** | `vehicle_owner` | `Owner@1234` | Personal vehicle garage, ABHA health records, guardian roster |
+| **SUPER_ADMIN** | `admin` | `Admin@1234` | **System Audit & Fleet Oversight** (`admin-audit`) |
+| **HOSPITAL_ER** | `hospital_er` | `Hospital@1234` | **Trauma ER Terminal & ICU Bed Bay** (`hospital-terminal`) |
+| **POLICE_CONTROL** | `police_ctrl` | `Police@1234` | **Police Interceptor Command** (`police-control`) |
+| **VEHICLE_OWNER** | `vehicle_owner` | `Owner@1234` | **Live Vehicle Garage & Telemetry Deck** (`dashboard`) |
+
+> [!TIP]
+> Logging in with any account automatically transitions the web dashboard to that role's specialized workspace with zero manual navigation required. In production, rotate all default credentials using the `/api/v1/auth` endpoints.
 
 ---
 
