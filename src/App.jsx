@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import TelemetryBar from './components/TelemetryBar';
@@ -18,6 +18,17 @@ import LoginPage from './components/Auth/LoginPage';
 import VehicleInfoForm from './components/Forms/VehicleInfoForm';
 import MedicalInfoForm from './components/Forms/MedicalInfoForm';
 import MobileBottomNav from './components/MobileBottomNav';
+import HospitalTerminalTab from './components/Hospital/HospitalTerminalTab';
+import HospitalIncidentRecordsTab from './components/Hospital/HospitalIncidentRecordsTab';
+import HospitalDirectoryTab from './components/Hospital/HospitalDirectoryTab';
+import PoliceCommandTab from './components/Police/PoliceCommandTab';
+import PoliceFirRecordsTab from './components/Police/PoliceFirRecordsTab';
+import PoliceDirectoryTab from './components/Police/PoliceDirectoryTab';
+import GuardianPortalTab from './components/Guardian/GuardianPortalTab';
+import GuardianTripHistoryTab from './components/Guardian/GuardianTripHistoryTab';
+import GuardianCircleTab from './components/Guardian/GuardianCircleTab';
+import MultiDeviceModal from './components/MultiDevice/MultiDeviceModal';
+import cloudDb from './services/cloudDbEngine';
 
 import { 
   initialVehicles, 
@@ -26,30 +37,121 @@ import {
 } from './services/mockData';
 import { defaultTelemetryState } from './services/telemetryEngine';
 
+const getInitialUser = () => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get('view');
+    if (view === 'hospital') {
+      return {
+        name: 'Dr. Rohan Sharma (ER Doctor)',
+        email: 'dr.rohan@trauma108.gov.in',
+        role: 'Paramedic ER'
+      };
+    }
+    if (view === 'police') {
+      return {
+        name: 'Inspector Vijay Kumar (PCR 112)',
+        email: 'inspector.vijay@delhipolice.gov.in',
+        role: 'Police Command'
+      };
+    }
+    if (view === 'guardian') {
+      return {
+        name: 'Sarah Mercer (Guardian)',
+        email: 'sarah.mercer@example.com',
+        role: 'Guardian'
+      };
+    }
+  } catch (e) {}
+  return {
+    name: 'Alex Mercer (Owner)',
+    email: 'alex.mercer@safedrive.io',
+    role: 'Vehicle Owner'
+  };
+};
+
+const getRoleHomeTab = (role) => {
+  if (role === 'Paramedic ER' || role === 'Hospital Staff') return 'hospital-terminal';
+  if (role === 'Police Command' || role === 'Police / Traffic Control') return 'police-command';
+  if (role === 'Guardian') return 'guardian-portal';
+  return 'dashboard';
+};
+
 export default function App() {
+  const [currentUser, setCurrentUser] = useState(getInitialUser);
   const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [vehicles, setVehicles] = useState(initialVehicles);
-  const [selectedVehicle, setSelectedVehicle] = useState(initialVehicles[0]);
-  const [medicalProfile, setMedicalProfile] = useState(initialMedicalProfile);
-  const [emergencyContacts, setEmergencyContacts] = useState(initialEmergencyContacts);
+  const [activeTab, setActiveTab] = useState(() => getRoleHomeTab(getInitialUser().role));
+  const [isMultiDeviceOpen, setIsMultiDeviceOpen] = useState(false);
+  const [vehicles, setVehicles] = useState(() => cloudDb.state.vehicles || initialVehicles);
+  const [selectedVehicle, setSelectedVehicle] = useState(() => {
+    const selId = cloudDb.state.selectedVehicleId;
+    const found = (cloudDb.state.vehicles || []).find(v => v.id === selId);
+    return found || cloudDb.state.vehicles?.[0] || initialVehicles[0];
+  });
+  const [medicalProfile, setMedicalProfile] = useState(() => cloudDb.state.medicalProfile || initialMedicalProfile);
+  const [emergencyContacts, setEmergencyContacts] = useState(() => cloudDb.state.emergencyContacts || initialEmergencyContacts);
   const [telemetry, setTelemetry] = useState(defaultTelemetryState);
 
   // Emergency SOS Modal State
   const [isSosOpen, setIsSosOpen] = useState(false);
   const [emergencyData, setEmergencyData] = useState({ triggerSource: '', severity: '', reason: '' });
+  const lastProcessedIncidentId = useRef(null);
+  const isInitialMount = useRef(true);
 
   // Auth User State
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState({
-    name: 'Alex Mercer',
-    email: 'alex.mercer@safedrive.io',
-    role: 'Vehicle Owner'
-  });
+
+  // Subscribe to Worldwide Real-time Cloud Database
+  useEffect(() => {
+    const unsubscribe = cloudDb.subscribe((state) => {
+      if (state.telemetry) {
+        setTelemetry(prev => ({ ...prev, ...state.telemetry }));
+      }
+      if (state.vehicles && Array.isArray(state.vehicles) && state.vehicles.length > 0) {
+        setVehicles(state.vehicles);
+        if (state.selectedVehicleId) {
+          const found = state.vehicles.find(v => v.id === state.selectedVehicleId);
+          if (found) setSelectedVehicle(found);
+        }
+      }
+      if (state.medicalProfile) {
+        setMedicalProfile(state.medicalProfile);
+      }
+      if (state.emergencyContacts && Array.isArray(state.emergencyContacts)) {
+        setEmergencyContacts(state.emergencyContacts);
+      }
+
+      // On initial page mount or reload, ignore existing active incidents so SOS never starts automatically
+      if (isInitialMount.current) {
+        isInitialMount.current = false;
+        if (state.activeIncident) {
+          lastProcessedIncidentId.current = state.activeIncident.id;
+        }
+        return;
+      }
+
+      if (state.activeIncident && state.telemetry?.isEmergencyAlert) {
+        setEmergencyData({
+          triggerSource: 'WORLDWIDE_CLOUD_EVENT',
+          severity: state.activeIncident.severity || 'CRITICAL',
+          reason: state.activeIncident.aiSummary || state.activeIncident.reason || 'Accident Collision Detected'
+        });
+        // On driver cockpit, pop up emergency modal ONLY for newly triggered incidents
+        if (activeTab === 'dashboard' && state.activeIncident.id !== lastProcessedIncidentId.current) {
+          lastProcessedIncidentId.current = state.activeIncident.id;
+          setIsSosOpen(true);
+        }
+      } else {
+        setIsSosOpen(false);
+      }
+    });
+    return () => unsubscribe();
+  }, [activeTab]);
 
   const handleLoginSuccess = (userObj) => {
     setCurrentUser(userObj);
+    setActiveTab(getRoleHomeTab(userObj.role));
     setIsLoggedIn(true);
   };
 
@@ -70,11 +172,22 @@ export default function App() {
       alertSeverity: severity,
       alertReason: reason
     }));
+    const newIncident = cloudDb.triggerCrashIncident({
+      severity,
+      reason,
+      peakGForce: triggerSource.includes('IMPACT') ? '5.99g' : '3.82g',
+      speedAtImpact: `${telemetry.speedKmh.toFixed(0)} km/h`,
+      location: 'NH-48 Expressway, KM 34.2 (Near Hero Honda Chowk)'
+    });
+    if (newIncident && newIncident.id) {
+      lastProcessedIncidentId.current = newIncident.id;
+    }
     setIsSosOpen(true);
   };
 
   const updateTelemetry = (newTelemetry) => {
     setTelemetry(prev => ({ ...prev, ...newTelemetry }));
+    cloudDb.broadcastTelemetry(newTelemetry);
   };
 
   // IF NOT LOGGED IN -> RENDER FIRST LOGIN / REGISTRATION PAGE
@@ -97,10 +210,13 @@ export default function App() {
         openAuthModal={() => setIsAuthOpen(true)}
         expiryAlertCount={expiryAlertCount}
         onToggleMobileMenu={() => setIsMobileMenuOpen(prev => !prev)}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onOpenMultiDevice={() => setIsMultiDeviceOpen(true)}
       />
 
-      {/* Hardware Status Strip */}
-      <TelemetryBar telemetry={telemetry} />
+      {/* Hardware / Operational Status Strip */}
+      <TelemetryBar telemetry={telemetry} currentUser={currentUser} cloudDb={cloudDb} />
 
       {/* Tablet Quick Horizontal Tab Strip (Visible on tablet 769px - 1024px) */}
       <nav className="tablet-nav-strip touch-scroll-x no-scrollbar" style={{
@@ -114,41 +230,69 @@ export default function App() {
         top: '62px',
         zIndex: 900
       }}>
-        {[
-          { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-          { id: 'map', label: 'Incident Map', icon: '🗺️' },
-          { id: 'hospital-map', label: 'Hospital & Police', icon: '🏥' },
-          { id: 'ai-analysis', label: 'AI Analysis', icon: '🧠' },
-          { id: 'vehicles', label: 'Vehicles', icon: '🚗' },
-          { id: 'medical', label: 'Medical', icon: '🩺' },
-          { id: 'contacts', label: 'Contacts', icon: '👥' },
-          { id: 'history', label: 'History', icon: '📜' },
-          { id: 'architecture', label: 'Architecture', icon: '⚡' },
-          { id: 'api-hub', label: 'ESP32 API', icon: '🔌' }
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '20px',
-              fontSize: '0.78rem',
-              fontWeight: activeTab === tab.id ? 700 : 500,
-              whiteSpace: 'nowrap',
-              border: activeTab === tab.id ? '1px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.08)',
-              background: activeTab === tab.id ? 'rgba(245, 158, 11, 0.18)' : 'rgba(255, 255, 255, 0.04)',
-              color: activeTab === tab.id ? '#fbbf24' : '#cbd5e1',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              flexShrink: 0
-            }}
-          >
-            <span>{tab.icon}</span>
-            <span>{tab.label}</span>
-          </button>
-        ))}
+        {(() => {
+          const role = currentUser?.role || 'Vehicle Owner';
+          let tabs = [];
+          if (role === 'Paramedic ER' || role === 'Hospital Staff') {
+            tabs = [
+              { id: 'hospital-terminal', label: 'Trauma ER', icon: '🏥' },
+              { id: 'hospital-map', label: 'Trauma Map', icon: '🚑' },
+              { id: 'history', label: 'MLC Incidents', icon: '📜' },
+              { id: 'contacts', label: 'ER Directory', icon: '📞' }
+            ];
+          } else if (role === 'Police Command' || role === 'Police / Traffic Control') {
+            tabs = [
+              { id: 'police-command', label: 'PCR Command', icon: '🚓' },
+              { id: 'map', label: 'Radar Map', icon: '🗺️' },
+              { id: 'history', label: 'FIR Records', icon: '📜' },
+              { id: 'contacts', label: 'Police Dir', icon: '📞' }
+            ];
+          } else if (role === 'Guardian') {
+            tabs = [
+              { id: 'guardian-portal', label: 'Safety', icon: '👨‍👩‍👧' },
+              { id: 'map', label: 'Live GPS', icon: '🗺️' },
+              { id: 'history', label: 'Trips', icon: '📜' },
+              { id: 'contacts', label: 'Circle', icon: '👥' }
+            ];
+          } else {
+            tabs = [
+              { id: 'dashboard', label: 'Cockpit', icon: '📊' },
+              { id: 'map', label: 'GPS Map', icon: '🗺️' },
+              { id: 'hospital-map', label: 'Facilities', icon: '🚑' },
+              { id: 'ai-analysis', label: 'AI Analysis', icon: '🧠' },
+              { id: 'vehicles', label: 'Vehicles', icon: '🚗' },
+              { id: 'medical', label: 'Medical', icon: '🩺' },
+              { id: 'contacts', label: 'Contacts', icon: '👥' },
+              { id: 'history', label: 'History', icon: '📜' },
+              { id: 'architecture', label: 'Architecture', icon: '⚡' },
+              { id: 'api-hub', label: 'ESP32 API', icon: '🔌' }
+            ];
+          }
+          return tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                padding: '6px 14px',
+                borderRadius: '20px',
+                fontSize: '0.78rem',
+                fontWeight: activeTab === tab.id ? 700 : 500,
+                whiteSpace: 'nowrap',
+                border: activeTab === tab.id ? '1px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.08)',
+                background: activeTab === tab.id ? 'rgba(245, 158, 11, 0.18)' : 'rgba(255, 255, 255, 0.04)',
+                color: activeTab === tab.id ? '#fbbf24' : '#cbd5e1',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                flexShrink: 0
+              }}
+            >
+              <span>{tab.icon}</span>
+              <span>{tab.label}</span>
+            </button>
+          ));
+        })()}
       </nav>
 
       {/* Main Grid Content */}
@@ -161,6 +305,7 @@ export default function App() {
           emergencyActive={telemetry.isEmergencyAlert}
           isMobileOpen={isMobileMenuOpen}
           onCloseMobile={() => setIsMobileMenuOpen(false)}
+          currentUser={currentUser}
         />
 
         {/* Tab Content Rendering */}
@@ -178,6 +323,18 @@ export default function App() {
               triggerEmergency={triggerEmergency}
               setActiveTab={setActiveTab}
             />
+          )}
+
+          {activeTab === 'hospital-terminal' && (
+            <HospitalTerminalTab />
+          )}
+
+          {activeTab === 'police-command' && (
+            <PoliceCommandTab />
+          )}
+
+          {activeTab === 'guardian-portal' && (
+            <GuardianPortalTab />
           )}
 
           {activeTab === 'map' && (
@@ -222,16 +379,32 @@ export default function App() {
           )}
 
           {activeTab === 'contacts' && (
-            <EmergencyContactsTab 
-              contacts={emergencyContacts}
-              setContacts={setEmergencyContacts}
-              telemetry={telemetry}
-              selectedVehicle={selectedVehicle}
-            />
+            (currentUser?.role === 'Paramedic ER' || currentUser?.role === 'Hospital Staff') ? (
+              <HospitalDirectoryTab />
+            ) : (currentUser?.role === 'Police Command' || currentUser?.role === 'Police / Traffic Control') ? (
+              <PoliceDirectoryTab />
+            ) : (currentUser?.role === 'Guardian') ? (
+              <GuardianCircleTab />
+            ) : (
+              <EmergencyContactsTab 
+                contacts={emergencyContacts}
+                setContacts={setEmergencyContacts}
+                telemetry={telemetry}
+                selectedVehicle={selectedVehicle}
+              />
+            )
           )}
 
           {activeTab === 'history' && (
-            <AccidentHistoryTab />
+            (currentUser?.role === 'Paramedic ER' || currentUser?.role === 'Hospital Staff') ? (
+              <HospitalIncidentRecordsTab />
+            ) : (currentUser?.role === 'Police Command' || currentUser?.role === 'Police / Traffic Control') ? (
+              <PoliceFirRecordsTab />
+            ) : (currentUser?.role === 'Guardian') ? (
+              <GuardianTripHistoryTab />
+            ) : (
+              <AccidentHistoryTab />
+            )
           )}
 
           {activeTab === 'architecture' && (
@@ -250,7 +423,10 @@ export default function App() {
       {/* High Priority Emergency SOS Modal */}
       <EmergencySosModal 
         isOpen={isSosOpen}
-        onClose={() => setIsSosOpen(false)}
+        onClose={() => {
+          setIsSosOpen(false);
+          setTelemetry(prev => ({ ...prev, isEmergencyAlert: false }));
+        }}
         selectedVehicle={selectedVehicle}
         telemetry={telemetry}
         emergencyData={emergencyData}
@@ -267,12 +443,19 @@ export default function App() {
         onLogout={handleLogout}
       />
 
+      {/* Worldwide Multi-Device Presentation Setup Modal */}
+      <MultiDeviceModal 
+        isOpen={isMultiDeviceOpen}
+        onClose={() => setIsMultiDeviceOpen(false)}
+      />
+
       {/* Native Mobile Bottom Navigation Bar (< 769px) */}
       <MobileBottomNav 
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onOpenMenu={() => setIsMobileMenuOpen(true)}
         emergencyActive={telemetry.isEmergencyAlert}
+        currentUser={currentUser}
       />
     </div>
   );

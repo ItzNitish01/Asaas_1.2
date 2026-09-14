@@ -142,7 +142,7 @@ export default function DashboardTab({
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span className="live-dot" />
               <h3 style={{ fontSize: '1.1rem', color: '#f8fafc', margin: 0, fontWeight: 800 }}>
-                ASAAS DEVICE MONITORING ({selectedVehicle.espDeviceId})
+                ASAAS DEVICE MONITORING ({selectedVehicle?.espDeviceId || 'ASAAS-001'})
               </h3>
             </div>
             <span className="badge badge-success">NORMAL CONDITION - VEHICLE RUNNING</span>

@@ -10,14 +10,33 @@ import {
   ShieldCheck,
   Stethoscope,
   Users,
+  Shield,
   LogIn,
   UserPlus
 } from 'lucide-react';
 
+const getInitialRole = () => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get('view');
+    if (view === 'hospital') return 'Paramedic ER';
+    if (view === 'police') return 'Police Command';
+    if (view === 'guardian') return 'Guardian';
+  } catch (e) {}
+  return 'Vehicle Owner';
+};
+
+const getRoleEmail = (role) => {
+  if (role === 'Paramedic ER') return 'dr.rohan@trauma108.gov.in';
+  if (role === 'Police Command') return 'inspector.vijay@delhipolice.gov.in';
+  if (role === 'Guardian') return 'sarah.mercer@example.com';
+  return 'alex.mercer@safedrive.io';
+};
+
 export default function LoginPage({ onLoginSuccess }) {
   const [activeMode, setActiveMode] = useState('login'); // 'login' | 'register'
-  const [selectedRole, setSelectedRole] = useState('Vehicle Owner');
-  const [email, setEmail] = useState('alex.mercer@safedrive.io');
+  const [selectedRole, setSelectedRole] = useState(getInitialRole);
+  const [email, setEmail] = useState(() => getRoleEmail(getInitialRole()));
   const [password, setPassword] = useState('••••••••');
   
   // Registration form fields
@@ -27,8 +46,13 @@ export default function LoginPage({ onLoginSuccess }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    let defaultName = 'Alex Mercer (Owner)';
+    if (selectedRole === 'Paramedic ER') defaultName = 'Dr. Rohan Sharma (ER Doctor)';
+    else if (selectedRole === 'Police Command') defaultName = 'Inspector Vijay Kumar (PCR 112)';
+    else if (selectedRole === 'Guardian') defaultName = 'Sarah Mercer (Guardian)';
+
     const userObj = {
-      name: activeMode === 'login' ? 'Alex Mercer' : (regName || 'New User'),
+      name: activeMode === 'login' ? defaultName : (regName || 'New User'),
       email,
       role: selectedRole,
       vehicleType: regVehicleType,
@@ -131,14 +155,25 @@ export default function LoginPage({ onLoginSuccess }) {
               </button>
 
               <button 
-                onClick={() => handleQuickDemoLogin('Paramedic ER', 'Dr. Rohan Sharma (ER Doctor)', 'dr.rohan@maxhealth.example.com')}
+                onClick={() => handleQuickDemoLogin('Paramedic ER', 'Dr. Rohan Sharma (ER Doctor)', 'dr.rohan@trauma108.gov.in')}
                 className="btn btn-ghost"
-                style={{ justifyContent: 'space-between', padding: '10px 14px', fontSize: '0.82rem', borderColor: 'rgba(16, 185, 129, 0.3)' }}
+                style={{ justifyContent: 'space-between', padding: '10px 14px', fontSize: '0.82rem', borderColor: 'rgba(239, 68, 68, 0.3)' }}
               >
                 <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Stethoscope size={16} color="#10b981" /> Paramedic / ER Doctor
+                  <Stethoscope size={16} color="#ef4444" /> Hospital ER Trauma (Dr. Rohan)
                 </span>
-                <ArrowRight size={14} color="#10b981" />
+                <ArrowRight size={14} color="#ef4444" />
+              </button>
+
+              <button 
+                onClick={() => handleQuickDemoLogin('Police Command', 'Inspector Vijay Kumar (PCR 112)', 'inspector.vijay@delhipolice.gov.in')}
+                className="btn btn-ghost"
+                style={{ justifyContent: 'space-between', padding: '10px 14px', fontSize: '0.82rem', borderColor: 'rgba(56, 189, 248, 0.3)' }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Shield size={16} color="#38bdf8" /> Police PCR Command (Inspector Vijay)
+                </span>
+                <ArrowRight size={14} color="#38bdf8" />
               </button>
 
               <button 
@@ -147,7 +182,7 @@ export default function LoginPage({ onLoginSuccess }) {
                 style={{ justifyContent: 'space-between', padding: '10px 14px', fontSize: '0.82rem', borderColor: 'rgba(168, 85, 247, 0.3)' }}
               >
                 <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Users size={16} color="#c084fc" /> Guardian / Family Contact
+                  <Users size={16} color="#c084fc" /> Family Guardian (Sarah Mercer)
                 </span>
                 <ArrowRight size={14} color="#c084fc" />
               </button>
@@ -231,11 +266,12 @@ export default function LoginPage({ onLoginSuccess }) {
             {/* Role Selector */}
             <div>
               <label style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: '6px' }}>SELECT ACCESS ROLE</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                 {[
-                  { id: 'Vehicle Owner', icon: ShieldCheck },
-                  { id: 'Paramedic ER', icon: Stethoscope },
-                  { id: 'Guardian', icon: Users }
+                  { id: 'Vehicle Owner', label: '🚗 Vehicle Owner', icon: ShieldCheck, color: '#f59e0b' },
+                  { id: 'Paramedic ER', label: '🏥 Hospital ER', icon: Stethoscope, color: '#ef4444' },
+                  { id: 'Police Command', label: '🚓 Police PCR', icon: Shield, color: '#38bdf8' },
+                  { id: 'Guardian', label: '👨‍👩‍👧 Guardian', icon: Users, color: '#c084fc' }
                 ].map(r => {
                   const Icon = r.icon;
                   const active = selectedRole === r.id;
@@ -243,23 +279,27 @@ export default function LoginPage({ onLoginSuccess }) {
                     <button
                       key={r.id}
                       type="button"
-                      onClick={() => setSelectedRole(r.id)}
+                      onClick={() => {
+                        setSelectedRole(r.id);
+                        setEmail(getRoleEmail(r.id));
+                      }}
                       style={{
-                        padding: '9px 4px',
+                        padding: '10px 8px',
                         borderRadius: '8px',
-                        border: active ? '1px solid #f59e0b' : '1px solid rgba(255,255,255,0.08)',
-                        background: active ? 'rgba(245, 158, 11, 0.18)' : 'transparent',
-                        color: active ? '#f59e0b' : '#94a3b8',
-                        fontSize: '0.72rem',
-                        fontWeight: 600,
+                        border: active ? `1px solid ${r.color}` : '1px solid rgba(255,255,255,0.08)',
+                        background: active ? `${r.color}26` : 'rgba(255,255,255,0.02)',
+                        color: active ? r.color : '#94a3b8',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
                         cursor: 'pointer',
                         display: 'flex',
-                        flexDirection: 'column',
                         alignItems: 'center',
-                        gap: '4px'
+                        justifyContent: 'center',
+                        gap: '6px'
                       }}
                     >
-                      <Icon size={16} /> {r.id}
+                      <Icon size={16} color={active ? r.color : '#94a3b8'} />
+                      <span>{r.label}</span>
                     </button>
                   );
                 })}

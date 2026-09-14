@@ -7,6 +7,7 @@ import {
   ShieldCheck, 
   Stethoscope, 
   Users, 
+  Shield,
   KeyRound,
   UserPlus,
   LogIn,
@@ -21,7 +22,7 @@ export default function AuthModal({ isOpen, onClose, currentUser, setCurrentUser
   const [activeMode, setActiveMode] = useState('login'); // 'login' | 'register'
   
   // Login State
-  const [email, setEmail] = useState(currentUser?.email || 'alex.mercer@asaas.io');
+  const [email, setEmail] = useState(currentUser?.email || 'alex.mercer@safedrive.io');
   const [password, setPassword] = useState('••••••••');
   const [selectedRole, setSelectedRole] = useState(currentUser?.role || 'Vehicle Owner');
 
@@ -40,21 +41,23 @@ export default function AuthModal({ isOpen, onClose, currentUser, setCurrentUser
   const handleRoleChange = (role) => {
     setSelectedRole(role);
     if (role === 'Vehicle Owner') {
-      setEmail('alex.mercer@asaas.io');
+      setEmail('alex.mercer@safedrive.io');
     } else if (role === 'Paramedic ER') {
       setEmail('dr.rohan@trauma108.gov.in');
+    } else if (role === 'Police Command') {
+      setEmail('inspector.vijay@delhipolice.gov.in');
     } else if (role === 'Guardian') {
-      setEmail('guardian.alert@gmail.com');
+      setEmail('sarah.mercer@example.com');
     }
   };
 
   const handleLogin = (e) => {
     e.preventDefault();
-    const displayName = selectedRole === 'Paramedic ER' 
-      ? 'Dr. Rohan Sharma (Paramedic 108)' 
-      : selectedRole === 'Guardian' 
-        ? 'Sarah Mercer (Guardian)' 
-        : (currentUser?.name || 'Alex Mercer');
+    let displayName = currentUser?.name || 'Alex Mercer';
+    if (selectedRole === 'Paramedic ER') displayName = 'Dr. Rohan Sharma (Paramedic 108)';
+    else if (selectedRole === 'Police Command') displayName = 'Inspector Vijay Kumar (PCR 112)';
+    else if (selectedRole === 'Guardian') displayName = 'Sarah Mercer (Guardian)';
+    else if (selectedRole === 'Vehicle Owner') displayName = 'Alex Mercer (Owner)';
 
     setCurrentUser({
       name: displayName,
@@ -221,11 +224,12 @@ export default function AuthModal({ isOpen, onClose, currentUser, setCurrentUser
               <label style={{ fontSize: '0.74rem', color: '#94a3b8', display: 'block', marginBottom: '6px', fontWeight: 600, letterSpacing: '0.04em' }}>
                 SELECT ACCESS ROLE
               </label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                 {[
-                  { id: 'Vehicle Owner', icon: ShieldCheck },
-                  { id: 'Paramedic ER', icon: Stethoscope },
-                  { id: 'Guardian', icon: Users }
+                  { id: 'Vehicle Owner', label: '🚗 Vehicle Owner', icon: ShieldCheck, color: '#f59e0b' },
+                  { id: 'Paramedic ER', label: '🏥 Hospital ER', icon: Stethoscope, color: '#ef4444' },
+                  { id: 'Police Command', label: '🚓 Police PCR', icon: Shield, color: '#38bdf8' },
+                  { id: 'Guardian', label: '👨‍👩‍👧 Guardian', icon: Users, color: '#c084fc' }
                 ].map(r => {
                   const Icon = r.icon;
                   const active = selectedRole === r.id;
@@ -235,22 +239,23 @@ export default function AuthModal({ isOpen, onClose, currentUser, setCurrentUser
                       type="button"
                       onClick={() => handleRoleChange(r.id)}
                       style={{
-                        padding: '10px 4px',
+                        padding: '10px 6px',
                         borderRadius: '10px',
-                        border: active ? '1.5px solid #f59e0b' : '1px solid rgba(255,255,255,0.08)',
-                        background: active ? 'rgba(245, 158, 11, 0.18)' : 'rgba(255,255,255,0.02)',
-                        color: active ? '#f59e0b' : '#94a3b8',
-                        fontSize: '0.72rem',
-                        fontWeight: 600,
+                        border: active ? `1.5px solid ${r.color}` : '1px solid rgba(255,255,255,0.08)',
+                        background: active ? `${r.color}26` : 'rgba(255,255,255,0.02)',
+                        color: active ? r.color : '#94a3b8',
+                        fontSize: '0.74rem',
+                        fontWeight: 700,
                         cursor: 'pointer',
                         display: 'flex',
-                        flexDirection: 'column',
                         alignItems: 'center',
-                        gap: '4px',
+                        justifyContent: 'center',
+                        gap: '6px',
                         transition: 'all 0.15s ease'
                       }}
                     >
-                      <Icon size={16} /> {r.id}
+                      <Icon size={16} color={active ? r.color : '#94a3b8'} />
+                      <span>{r.label}</span>
                     </button>
                   );
                 })}
@@ -350,11 +355,12 @@ export default function AuthModal({ isOpen, onClose, currentUser, setCurrentUser
               <label style={{ fontSize: '0.74rem', color: '#94a3b8', display: 'block', marginBottom: '6px', fontWeight: 600, letterSpacing: '0.04em' }}>
                 SELECT USER ROLE *
               </label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                 {[
-                  { id: 'Vehicle Owner', icon: ShieldCheck },
-                  { id: 'Paramedic ER', icon: Stethoscope },
-                  { id: 'Guardian', icon: Users }
+                  { id: 'Vehicle Owner', label: '🚗 Vehicle Owner', icon: ShieldCheck, color: '#f59e0b' },
+                  { id: 'Paramedic ER', label: '🏥 Hospital ER', icon: Stethoscope, color: '#ef4444' },
+                  { id: 'Police Command', label: '🚓 Police PCR', icon: Shield, color: '#38bdf8' },
+                  { id: 'Guardian', label: '👨‍👩‍👧 Guardian', icon: Users, color: '#c084fc' }
                 ].map(r => {
                   const Icon = r.icon;
                   const active = regRole === r.id;
@@ -364,22 +370,23 @@ export default function AuthModal({ isOpen, onClose, currentUser, setCurrentUser
                       type="button"
                       onClick={() => setRegRole(r.id)}
                       style={{
-                        padding: '9px 4px',
+                        padding: '10px 6px',
                         borderRadius: '10px',
-                        border: active ? '1.5px solid #f59e0b' : '1px solid rgba(255,255,255,0.08)',
-                        background: active ? 'rgba(245, 158, 11, 0.18)' : 'rgba(255,255,255,0.02)',
-                        color: active ? '#f59e0b' : '#94a3b8',
-                        fontSize: '0.72rem',
-                        fontWeight: 600,
+                        border: active ? `1.5px solid ${r.color}` : '1px solid rgba(255,255,255,0.08)',
+                        background: active ? `${r.color}26` : 'rgba(255,255,255,0.02)',
+                        color: active ? r.color : '#94a3b8',
+                        fontSize: '0.74rem',
+                        fontWeight: 700,
                         cursor: 'pointer',
                         display: 'flex',
-                        flexDirection: 'column',
                         alignItems: 'center',
-                        gap: '4px',
+                        justifyContent: 'center',
+                        gap: '6px',
                         transition: 'all 0.15s ease'
                       }}
                     >
-                      <Icon size={16} /> {r.id}
+                      <Icon size={16} color={active ? r.color : '#94a3b8'} />
+                      <span>{r.label}</span>
                     </button>
                   );
                 })}
