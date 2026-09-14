@@ -70,11 +70,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS
+# CORS - Permits localhost, Vercel, Netlify, and custom production domains
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
-    allow_origins=[settings.frontend_origin, "http://localhost:5173", "http://localhost:3000", "http://localhost"],
+    allow_origin_regex=r"^https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
