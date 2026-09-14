@@ -26,7 +26,8 @@ import {
   Moon,
   Zap,
   PhoneCall,
-  UserPlus
+  UserPlus,
+  RotateCcw
 } from 'lucide-react';
 import cloudDb from '../../services/cloudDbEngine';
 
@@ -65,11 +66,20 @@ export default function GuardianPortalTab() {
   const [savedToast, setSavedToast] = useState('');
 
   useEffect(() => {
+    cloudDb.syncFromBackend?.();
     const unsubscribe = cloudDb.subscribe((newState) => {
       setDbState({ ...newState });
     });
     return () => unsubscribe();
   }, []);
+
+  const handleResetDemo = () => {
+    if (window.confirm('Reset emergency state across all connected devices?')) {
+      cloudDb.resetDemoState(true);
+      setSavedToast('Emergency state reset to standby across all stations');
+      setTimeout(() => setSavedToast(''), 3000);
+    }
+  };
 
   const activeIncident = dbState.activeIncident;
   const dispatches = dbState.dispatches.hospital;
@@ -259,6 +269,27 @@ export default function GuardianPortalTab() {
             <Radio size={14} />
             <span>Room: {dbState.roomId}</span>
           </div>
+
+          <button
+            onClick={handleResetDemo}
+            title="Reset incident across all devices"
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: '#cbd5e1',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '0.8rem',
+              fontWeight: 600
+            }}
+          >
+            <RotateCcw size={14} />
+            <span>Reset Standby</span>
+          </button>
         </div>
       </div>
 
@@ -492,6 +523,25 @@ export default function GuardianPortalTab() {
                 >
                   <Shield size={16} /> Call Police PCR (112)
                 </a>
+
+                <button
+                  onClick={handleResetDemo}
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.25)',
+                    border: '1px solid #ef4444',
+                    color: '#fca5a5',
+                    padding: '10px 16px',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    fontSize: '0.82rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <RotateCcw size={16} /> Mark Safe & Stop Alert
+                </button>
               </div>
             </div>
           ) : (

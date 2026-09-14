@@ -553,6 +553,27 @@ export default function HospitalTerminalTab() {
                     {formatTimer(goldenHourSeconds)}
                   </div>
                   <div style={{ fontSize: '0.68rem', color: '#94a3b8' }}>Time to Definitive Trauma Surgery</div>
+                  <button
+                    onClick={handleResetDemo}
+                    title="Resolve and reset emergency state across all terminals"
+                    style={{
+                      marginTop: '8px',
+                      background: 'rgba(239, 68, 68, 0.25)',
+                      border: '1px solid #ef4444',
+                      color: '#fca5a5',
+                      padding: '5px 12px',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '0.74rem',
+                      fontWeight: 700,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px'
+                    }}
+                  >
+                    <RotateCcw size={12} />
+                    <span>Resolve / Reset Alert</span>
+                  </button>
                 </div>
               </div>
 

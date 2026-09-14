@@ -432,32 +432,55 @@ export default function PoliceCommandTab() {
                   </div>
                 </div>
 
-                {/* Hospital Triage Linkage Indicator */}
-                <div style={{
-                  background: 'rgba(0, 0, 0, 0.6)',
-                  border: '1px solid rgba(56, 189, 248, 0.3)',
-                  borderRadius: '12px',
-                  padding: '8px 16px',
-                  fontSize: '0.78rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px'
-                }}>
+                {/* Hospital Triage Linkage Indicator & Quick Resolve */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                   <div style={{
-                    width: '10px',
-                    height: '10px',
-                    borderRadius: '50%',
-                    background: hospitalDispatches.ambulanceStatus === 'dispatched' ? '#10b981' : '#f59e0b',
-                    boxShadow: '0 0 8px #10b981'
-                  }}></div>
-                  <div>
-                    <div style={{ fontWeight: 700, color: '#fff' }}>HOSPITAL TRAUMA DESK:</div>
-                    <div style={{ color: '#38bdf8' }}>
-                      {hospitalDispatches.ambulanceStatus === 'dispatched' 
-                        ? 'ALS 108 Ambulance Dispatched (ETA: 7 mins)' 
-                        : 'Awaiting Trauma Desk Dispatch'}
+                    background: 'rgba(0, 0, 0, 0.6)',
+                    border: '1px solid rgba(56, 189, 248, 0.3)',
+                    borderRadius: '12px',
+                    padding: '8px 16px',
+                    fontSize: '0.78rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
+                  }}>
+                    <div style={{
+                      width: '10px',
+                      height: '10px',
+                      borderRadius: '50%',
+                      background: hospitalDispatches.ambulanceStatus === 'dispatched' ? '#10b981' : '#f59e0b',
+                      boxShadow: '0 0 8px #10b981'
+                    }}></div>
+                    <div>
+                      <div style={{ fontWeight: 700, color: '#fff' }}>HOSPITAL TRAUMA DESK:</div>
+                      <div style={{ color: '#38bdf8' }}>
+                        {hospitalDispatches.ambulanceStatus === 'dispatched' 
+                          ? 'ALS 108 Ambulance Dispatched (ETA: 7 mins)' 
+                          : 'Awaiting Trauma Desk Dispatch'}
+                      </div>
                     </div>
                   </div>
+
+                  <button
+                    onClick={handleResetDemo}
+                    title="Resolve highway incident and reset to standby"
+                    style={{
+                      background: 'rgba(239, 68, 68, 0.25)',
+                      border: '1px solid #ef4444',
+                      color: '#fca5a5',
+                      padding: '8px 14px',
+                      borderRadius: '10px',
+                      cursor: 'pointer',
+                      fontSize: '0.8rem',
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <RotateCcw size={14} />
+                    <span>Resolve / Reset Alert</span>
+                  </button>
                 </div>
               </div>
 

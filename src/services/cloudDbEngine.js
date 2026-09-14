@@ -266,6 +266,30 @@ class CloudDbEngine {
       if (activeRes && activeRes.status === 'SUCCESS') {
         if (activeRes.incident) {
           this.applyBackendIncident(activeRes.incident, activeRes.incident.dispatch, false);
+        } else if (this.state.activeIncident) {
+          // Clear stale active incident cached from prior sessions
+          this.state.activeIncident = null;
+          this.state.telemetry = {
+            ...this.state.telemetry,
+            isEmergencyAlert: false,
+            alertSeverity: '',
+            alertReason: '',
+            relayHornActive: false,
+            stopButtonPressed: false
+          };
+          if (this.state.dispatches?.hospital) {
+            this.state.dispatches.hospital.ambulanceStatus = 'standby';
+            this.state.dispatches.hospital.icuBedReserved = false;
+            this.state.dispatches.hospital.bloodUnitsReserved = 0;
+          }
+          if (this.state.dispatches?.police) {
+            this.state.dispatches.police.pcrStatus = 'patrolling';
+            this.state.dispatches.police.greenCorridorActive = false;
+            this.state.dispatches.police.hazardPerimeterSet = false;
+            this.state.dispatches.police.firGenerated = false;
+          }
+          this.saveToLocalStorage();
+          this.notify();
         }
       }
 
@@ -758,6 +782,7 @@ class CloudDbEngine {
 
   resetDemoState(broadcast = true) {
     this.resetLocalState(broadcast);
+    backendApi.abortEmergency(null, 'Reset from Terminal').catch(() => {});
   }
 
   resetLocalState(broadcast = true) {
