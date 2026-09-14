@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: asaas-backend-api
+    runtime: node
+    plan: starter
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MQTT_BROKER_URL
+        value: mqtt://broker.emqx.io:1883

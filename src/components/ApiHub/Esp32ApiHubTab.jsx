@@ -9,8 +9,10 @@ import {
   Terminal, 
   Radio, 
   Zap,
-  Activity
+  Activity,
+  Server
 } from 'lucide-react';
+import { backendApi } from '../../services/apiClient';
 
 export default function Esp32ApiHubTab({ updateTelemetry, triggerEmergency }) {
   const [copied, setCopied] = useState(false);
@@ -36,8 +38,10 @@ export default function Esp32ApiHubTab({ updateTelemetry, triggerEmergency }) {
   }, null, 2));
 
   const [responseStatus, setResponseStatus] = useState(null);
+  const [isSending, setIsSending] = useState(false);
 
-  const handleSendPacket = () => {
+  const handleSendPacket = async () => {
+    setIsSending(true);
     try {
       const parsed = JSON.parse(jsonPayload);
       updateTelemetry({
@@ -57,19 +61,26 @@ export default function Esp32ApiHubTab({ updateTelemetry, triggerEmergency }) {
         lastUpdateTimestamp: new Date().toLocaleTimeString()
       });
 
+      // Send to real backend server
+      const backendRes = await backendApi.ingestTelemetry(parsed);
+
       if (parsed.total_g > 4.0 || Math.abs(parsed.roll_deg) > 60) {
         triggerEmergency('ESP32_API_JSON_IMPACT', 'CRITICAL', `ESP32 Reported ${parsed.total_g}g Impact & ${parsed.roll_deg}° Roll`);
       }
 
       setResponseStatus({
         code: 200,
-        message: "HTTP/1.1 200 OK - Telemetry packet processed & dashboard updated!"
+        message: backendRes 
+          ? "HTTP/1.1 200 OK - Persisted to SQLite/PostgreSQL Database & Broadcasted to ER/CAD!"
+          : "HTTP/1.1 200 OK - Telemetry packet processed & dashboard updated!"
       });
     } catch (e) {
       setResponseStatus({
         code: 400,
         message: "HTTP/1.1 400 Bad Request - Invalid JSON payload syntax."
       });
+    } finally {
+      setIsSending(false);
     }
   };
 

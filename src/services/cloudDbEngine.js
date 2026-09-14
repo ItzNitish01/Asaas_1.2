@@ -23,6 +23,7 @@ import {
   initialGuardianSettings
 } from './mockData';
 import { defaultTelemetryState } from './telemetryEngine';
+import { backendApi } from './apiClient';
 
 // Default Demo Room Code for Global Isolation
 const DEFAULT_ROOM_ID = 'ASAAS-GLOBAL-LIVE';
@@ -104,6 +105,22 @@ class CloudDbEngine {
 
     // Connect to Worldwide Real-time Cloud Broker
     this.connectCloudBroker();
+
+    // Hook Real-Time Backend WebSocket notifications
+    this.initBackendSocketBridge();
+  }
+
+  initBackendSocketBridge() {
+    backendApi.subscribe((type, payload) => {
+      if (type === 'TELEMETRY_STREAM' && payload && payload.telemetry) {
+        this.state.telemetry = { ...this.state.telemetry, ...payload.telemetry };
+        this.notify();
+      } else if (type === 'INCIDENT_TRIGGERED' && payload && payload.incident) {
+        this.handleIncomingMessage('incident', { incident: payload.incident });
+      } else if (type === 'INCIDENT_ABORTED') {
+        this.resetLocalState(false);
+      }
+    });
   }
 
   getInitialRoomId() {
@@ -457,6 +474,17 @@ class CloudDbEngine {
 
     this.saveToLocalStorage();
     this.publishToCloud(`asaas/${this.roomId}/incident`, { incident: newIncident });
+    
+    // Async push to backend persistent database
+    backendApi.triggerEmergency({
+      deviceId: 'ASAAS-001',
+      severity: severity || 'CRITICAL',
+      reason: reason || 'Accident Crash Detected',
+      peakGForce: peakGForce || '5.84g',
+      speedAtImpact: speedAtImpact || '74 km/h',
+      coordinates: coordinates || { lat: 28.4595, lng: 77.0266 }
+    }).catch(e => console.warn('Backend sync warning:', e));
+
     this.notify();
     return newIncident;
   }
