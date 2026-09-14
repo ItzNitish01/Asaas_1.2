@@ -232,8 +232,8 @@ export default function GuardianPortalTab() {
             <Users size={28} color="#c084fc" />
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h1 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#fff' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <h1 style={{ margin: 0, fontSize: 'clamp(1rem, 3.8vw, 1.25rem)', fontWeight: 800, color: '#fff' }}>
                 FAMILY GUARDIAN SAFETY PORTAL
               </h1>
               <span style={{

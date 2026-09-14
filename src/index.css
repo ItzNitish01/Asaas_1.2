@@ -57,6 +57,20 @@
   padding: 0;
 }
 
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+#root, .app-container {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
 body {
   background-color: var(--bg-dark);
   color: var(--text-main);
@@ -448,19 +462,39 @@ h1, h2, h3, h4, h5, h6 {
   pointer-events: none;
 }
 
+/* Responsive Visibility Utility Classes */
+.desktop-only {
+  display: flex !important;
+}
+.desktop-tablet-only {
+  display: flex !important;
+}
+.mobile-only {
+  display: none !important;
+}
+.mobile-only-flex {
+  display: none !important;
+}
+.mobile-only-inline {
+  display: none !important;
+}
+
 /* Tablet & Mobile Breakpoints */
 @media (max-width: 1024px) {
-  .desktop-sidebar-only {
+  .desktop-only {
     display: none !important;
   }
-  .mobile-nav-toggle {
-    display: flex !important;
+  .desktop-sidebar-only {
+    display: none !important;
   }
   .app-main {
     grid-template-columns: 1fr !important;
   }
   .map-split-layout {
     grid-template-columns: 1fr !important;
+  }
+  .mobile-only {
+    display: block !important;
   }
 }
 
@@ -476,10 +510,16 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Tablet Quick Tab Strip (769px to 1024px) */
-@media (max-width: 768px) {
+/* Tablet Quick Tab Strip (769px to 1024px only) */
+.tablet-nav-strip {
+  display: none !important;
+}
+@media (min-width: 769px) and (max-width: 1024px) {
   .tablet-nav-strip {
-    display: none !important;
+    display: flex !important;
+  }
+  .mobile-nav-toggle {
+    display: flex !important;
   }
 }
 
@@ -649,8 +689,17 @@ h1, h2, h3, h4, h5, h6 {
     width: 100% !important;
     max-width: 100% !important;
   }
-  .mobile-nav-toggle {
+  .desktop-tablet-only {
+    display: none !important;
+  }
+  .mobile-only-flex {
     display: flex !important;
+  }
+  .mobile-only-inline {
+    display: inline !important;
+  }
+  .mobile-nav-toggle {
+    display: none !important;
   }
   .terminal-container {
     padding: 10px 8px !important;
@@ -681,6 +730,9 @@ h1, h2, h3, h4, h5, h6 {
   }
   .navbar-user-btn {
     padding: 6px 6px !important;
+  }
+  .navbar-sync-btn {
+    padding: 5px 8px !important;
   }
   .navbar-hw-stats {
     display: none !important;
@@ -724,7 +776,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @media (max-width: 640px) {
-  .navbar-role-badge span.btn-text-hide-xs {
+  .navbar-role-badge,
+  .navbar-db-badge,
+  .navbar-station-badge,
+  .navbar-hotline-badge {
     display: none !important;
   }
   .navbar-hw-stats {

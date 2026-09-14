@@ -265,7 +265,15 @@ export default function App() {
         {(() => {
           const role = currentUser?.role || 'Vehicle Owner';
           let tabs = [];
-          if (role === 'Paramedic ER' || role === 'Hospital Staff') {
+          if (role === 'Super Admin' || role === 'SUPER_ADMIN') {
+            tabs = [
+              { id: 'admin-audit', label: 'Master Audit', icon: '⚡' },
+              { id: 'hospital-terminal', label: 'Trauma ER', icon: '🏥' },
+              { id: 'police-command', label: 'PCR 112', icon: '🚓' },
+              { id: 'guardian-portal', label: 'Safety', icon: '👨‍👩‍👧' },
+              { id: 'dashboard', label: 'Cockpit', icon: '📊' }
+            ];
+          } else if (role === 'Paramedic ER' || role === 'Hospital Staff') {
             tabs = [
               { id: 'hospital-terminal', label: 'Trauma ER', icon: '🏥' },
               { id: 'hospital-map', label: 'Trauma Map', icon: '🚑' },

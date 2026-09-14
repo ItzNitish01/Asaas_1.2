@@ -160,8 +160,8 @@ export default function AdminAuditTab({ setActiveTab }) {
             <ShieldAlert size={28} color="#ffffff" />
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, color: '#f8fafc' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <h2 style={{ margin: 0, fontSize: 'clamp(1.1rem, 3.8vw, 1.4rem)', fontWeight: 800, color: '#f8fafc' }}>
                 Master System Audit & Root Fleet Command
               </h2>
               <span className="badge badge-primary" style={{ background: '#7e22ce', color: '#fff', fontSize: '0.72rem' }}>
@@ -174,7 +174,7 @@ export default function AdminAuditTab({ setActiveTab }) {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button
             onClick={refreshAuditData}
             disabled={loading}

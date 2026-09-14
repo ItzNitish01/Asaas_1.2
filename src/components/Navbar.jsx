@@ -86,11 +86,11 @@ export default function Navbar({
         }}>
           <ShieldAlert size={20} color="#fff" />
         </div>
-        <div>
-          <h1 style={{ fontSize: 'clamp(1.05rem, 3.5vw, 1.25rem)', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, lineHeight: 1.1 }}>
-            ASAAS <span style={{ color: '#f59e0b', fontSize: '0.72rem', fontWeight: 700, padding: '2px 5px', borderRadius: '5px', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>OS</span>
+        <div style={{ minWidth: 0 }}>
+          <h1 style={{ fontSize: 'clamp(0.95rem, 3.2vw, 1.2rem)', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '6px', margin: 0, lineHeight: 1.1 }}>
+            ASAAS <span style={{ color: '#f59e0b', fontSize: '0.68rem', fontWeight: 700, padding: '1px 5px', borderRadius: '4px', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>OS</span>
           </h1>
-          <p className="navbar-brand-subtitle" style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '2px 0 0 0' }}>Automated System for Accident Alert & Safety</p>
+          <p className="navbar-brand-subtitle desktop-only" style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '2px 0 0 0' }}>Automated System for Accident Alert & Safety</p>
         </div>
       </div>
 
@@ -191,7 +191,7 @@ export default function Navbar({
         {isHospital && (
           <>
             {/* Hospital Facility Identification */}
-            <div style={{
+            <div className="navbar-station-badge desktop-only" style={{
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
@@ -209,7 +209,7 @@ export default function Navbar({
             </div>
 
             {/* Hospital Hotline & Trauma Level */}
-            <div className="btn-text-hide-xs" style={{
+            <div className="navbar-hotline-badge desktop-only" style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
@@ -232,7 +232,7 @@ export default function Navbar({
         {isPolice && (
           <>
             {/* Police Command Identity */}
-            <div style={{
+            <div className="navbar-station-badge desktop-only" style={{
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
@@ -250,7 +250,7 @@ export default function Navbar({
             </div>
 
             {/* Police Beat & Frequency */}
-            <div className="btn-text-hide-xs" style={{
+            <div className="navbar-hotline-badge desktop-only" style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
@@ -271,7 +271,7 @@ export default function Navbar({
 
         {/* ==================== 4. GUARDIAN HEADER ==================== */}
         {isGuardian && (
-          <div style={{
+          <div className="navbar-station-badge desktop-only" style={{
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
@@ -291,7 +291,7 @@ export default function Navbar({
 
         {/* ==================== 5. SUPER ADMIN HEADER ==================== */}
         {isSuperAdmin && (
-          <div style={{
+          <div className="navbar-station-badge desktop-only" style={{
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
@@ -310,8 +310,7 @@ export default function Navbar({
         )}
 
         {/* Role Badge Indicator */}
-        <div className="navbar-role-badge" style={{
-          display: 'flex',
+        <div className="navbar-role-badge desktop-tablet-only" style={{
           alignItems: 'center',
           gap: '6px',
           padding: '5px 11px',
@@ -351,9 +350,9 @@ export default function Navbar({
 
         {/* Live Backend & Database Engine Status Indicator */}
         <div 
-          title={backendOnline ? "ASAAS Real-Time Production Backend & Database: CONNECTED (ws://localhost:5000/ws)" : "Backend Server: Standalone Client Mode (Local In-Memory & Cloud MQTT Active)"}
+          className="navbar-db-badge desktop-tablet-only"
+          title={backendOnline ? "ASAAS Real-Time Production Backend & Database: CONNECTED" : "Backend Server: Standalone Client Mode"}
           style={{
-            display: 'flex',
             alignItems: 'center',
             gap: '5px',
             background: backendOnline ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)',
@@ -380,25 +379,26 @@ export default function Navbar({
         {/* Worldwide Room Sync Button */}
         <button
           onClick={onOpenMultiDevice}
+          className="navbar-sync-btn"
           title="Worldwide Multi-Device Presentation Setup (Open on Phone, Tablet & Laptop)"
           style={{
             background: 'rgba(99, 102, 241, 0.18)',
             border: '1px solid rgba(99, 102, 241, 0.4)',
             color: '#a5b4fc',
             borderRadius: '20px',
-            padding: '5px 11px',
+            padding: '5px 10px',
             fontSize: '0.74rem',
             fontWeight: 700,
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '5px',
             cursor: 'pointer',
             flexShrink: 0
           }}
         >
           <Globe size={14} color="#818cf8" />
-          <span className="btn-text-hide-xs">Sync:</span>
-          <span>{cloudDb.roomId.length > 12 ? `${cloudDb.roomId.substring(0, 10)}...` : cloudDb.roomId}</span>
+          <span className="desktop-tablet-only">Sync:</span>
+          <span className="desktop-tablet-only">{cloudDb.roomId.length > 12 ? `${cloudDb.roomId.substring(0, 10)}...` : cloudDb.roomId}</span>
         </button>
 
         {/* Emergency SOS / Simulation Trigger (Context-Aware) */}
@@ -406,10 +406,10 @@ export default function Navbar({
           <button 
             className="btn btn-emergency pulse-red navbar-sos-btn"
             onClick={() => triggerEmergency('MANUAL_SOS_BUTTON', 'CRITICAL', 'User Pressed SOS Panic Button')}
-            style={{ padding: '7px 12px', fontSize: '0.8rem', whiteSpace: 'nowrap', flexShrink: 0 }}
+            style={{ padding: '6px 10px', fontSize: '0.78rem', whiteSpace: 'nowrap', flexShrink: 0 }}
             id="btn-emergency-sos-top"
           >
-            <Zap size={14} /> <span className="btn-text-hide-xs">EMERGENCY </span>SOS
+            <Zap size={14} /> <span className="desktop-tablet-only">EMERGENCY </span><span>SOS</span>
           </button>
         )}
 
@@ -417,10 +417,10 @@ export default function Navbar({
           <button 
             className="btn btn-emergency pulse-red navbar-sos-btn"
             onClick={() => triggerEmergency('TRAUMA_SIMULATION_DRILL', 'CRITICAL', 'Simulated Mass Casualty Trauma Admission (ER Drill)')}
-            style={{ padding: '7px 12px', fontSize: '0.78rem', whiteSpace: 'nowrap', flexShrink: 0 }}
+            style={{ padding: '6px 10px', fontSize: '0.78rem', whiteSpace: 'nowrap', flexShrink: 0 }}
             title="Simulate Level-1 trauma crash admission to test hospital triage desk"
           >
-            <Zap size={14} /> <span className="btn-text-hide-xs">TEST </span>TRAUMA DRILL
+            <Zap size={14} /> <span className="desktop-tablet-only">TEST </span><span className="desktop-tablet-only">TRAUMA </span><span>DRILL</span>
           </button>
         )}
 
@@ -429,7 +429,7 @@ export default function Navbar({
             className="btn btn-emergency pulse-red navbar-sos-btn"
             onClick={() => triggerEmergency('HIGHWAY_CRASH_SIMULATION', 'CRITICAL', 'Simulated Highway Expressway Crash Event by PCR 112 CAD')}
             style={{ 
-              padding: '7px 12px', 
+              padding: '6px 10px', 
               fontSize: '0.78rem', 
               whiteSpace: 'nowrap', 
               flexShrink: 0,
@@ -438,7 +438,25 @@ export default function Navbar({
             }}
             title="Simulate highway crash incident to test patrol interceptor dispatch & green corridor"
           >
-            <Zap size={14} /> <span className="btn-text-hide-xs">TEST </span>PCR ALERT
+            <Zap size={14} /> <span className="desktop-tablet-only">TEST </span><span className="desktop-tablet-only">PCR </span><span>ALERT</span>
+          </button>
+        )}
+
+        {isSuperAdmin && (
+          <button 
+            className="btn btn-emergency pulse-red navbar-sos-btn"
+            onClick={() => triggerEmergency('FLEET_GATEWAY_DRILL', 'CRITICAL', 'Simulated Fleet-Wide Gateway Emergency Drill (Root Command)')}
+            style={{ 
+              padding: '6px 10px', 
+              fontSize: '0.78rem', 
+              whiteSpace: 'nowrap', 
+              flexShrink: 0,
+              background: 'linear-gradient(135deg, #9333ea 0%, #7e22ce 100%)', 
+              borderColor: '#a855f7' 
+            }}
+            title="Simulate full emergency response across all portals"
+          >
+            <Zap size={14} /> <span className="desktop-tablet-only">ROOT </span><span>DRILL</span>
           </button>
         )}
 
@@ -451,13 +469,13 @@ export default function Navbar({
             title={currentUser ? currentUser.role : 'Login'}
           >
             <UserCheck size={16} color="#f59e0b" />
-            <span className="btn-text-hide-xs" style={{ fontSize: '0.78rem' }}>{currentUser ? currentUser.role : 'Login'}</span>
+            <span className="desktop-only" style={{ fontSize: '0.78rem' }}>{currentUser ? currentUser.role : 'Login'}</span>
           </button>
 
           {currentUser && (
             <button 
               onClick={currentUser.onLogout}
-              className="btn btn-ghost navbar-logout-btn"
+              className="btn btn-ghost navbar-logout-btn desktop-tablet-only"
               title="Logout"
               style={{ padding: '6px 7px', borderRadius: '8px', color: '#f87171', borderColor: 'rgba(239, 68, 68, 0.3)' }}
             >

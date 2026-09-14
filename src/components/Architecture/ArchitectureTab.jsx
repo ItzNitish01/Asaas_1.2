@@ -76,11 +76,13 @@ export default function ArchitectureTab() {
             style={{
               background: selectedNode === 'website' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(10, 10, 10, 0.9)',
               border: selectedNode === 'website' ? '2px solid #f59e0b' : '1px solid rgba(245, 158, 11, 0.3)',
-              padding: '16px 28px',
+              padding: '16px 20px',
               borderRadius: '16px',
               textAlign: 'center',
               cursor: 'pointer',
-              minWidth: '280px',
+              width: '100%',
+              maxWidth: '340px',
+              boxSizing: 'border-box',
               boxShadow: selectedNode === 'website' ? '0 0 25px rgba(245, 158, 11, 0.3)' : 'none'
             }}
           >
@@ -96,11 +98,13 @@ export default function ArchitectureTab() {
             style={{
               background: selectedNode === 'dashboard' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(10, 10, 10, 0.9)',
               border: selectedNode === 'dashboard' ? '2px solid #f59e0b' : '1px solid rgba(245, 158, 11, 0.3)',
-              padding: '16px 28px',
+              padding: '16px 20px',
               borderRadius: '16px',
               textAlign: 'center',
               cursor: 'pointer',
-              minWidth: '340px',
+              width: '100%',
+              maxWidth: '340px',
+              boxSizing: 'border-box',
               boxShadow: selectedNode === 'dashboard' ? '0 0 25px rgba(245, 158, 11, 0.3)' : 'none'
             }}
           >
@@ -219,11 +223,13 @@ export default function ArchitectureTab() {
             style={{
               background: selectedNode === 'backend' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(10, 10, 10, 0.9)',
               border: selectedNode === 'backend' ? '2px solid #10b981' : '1px solid rgba(16, 185, 129, 0.3)',
-              padding: '14px 28px',
+              padding: '14px 20px',
               borderRadius: '14px',
               textAlign: 'center',
               cursor: 'pointer',
-              minWidth: '320px'
+              width: '100%',
+              maxWidth: '340px',
+              boxSizing: 'border-box'
             }}
           >
             <Server size={20} color="#10b981" style={{ margin: '0 auto 4px auto' }} />
@@ -239,11 +245,13 @@ export default function ArchitectureTab() {
             style={{
               background: selectedNode === 'database' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(10, 10, 10, 0.9)',
               border: selectedNode === 'database' ? '2px solid #f59e0b' : '1px solid rgba(245, 158, 11, 0.3)',
-              padding: '14px 28px',
+              padding: '14px 20px',
               borderRadius: '14px',
               textAlign: 'center',
               cursor: 'pointer',
-              minWidth: '320px'
+              width: '100%',
+              maxWidth: '340px',
+              boxSizing: 'border-box'
             }}
           >
             <Database size={20} color="#f59e0b" style={{ margin: '0 auto 4px auto' }} />

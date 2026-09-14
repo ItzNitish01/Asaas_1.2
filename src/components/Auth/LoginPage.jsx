@@ -74,7 +74,9 @@ export default function LoginPage({ onLoginSuccess }) {
   return (
     <div style={{
       minHeight: '100vh',
-      width: '100vw',
+      width: '100%',
+      maxWidth: '100%',
+      overflowX: 'hidden',
       background: '#000000',
       backgroundImage: `
         radial-gradient(circle at 15% 20%, rgba(56, 189, 248, 0.04) 0%, transparent 45%),

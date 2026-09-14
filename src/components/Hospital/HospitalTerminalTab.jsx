@@ -273,8 +273,8 @@ export default function HospitalTerminalTab() {
             <Heart size={28} color="#ef4444" className={activeIncident ? 'animate-pulse' : ''} />
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h1 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, letterSpacing: '0.02em', color: '#fff' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <h1 style={{ margin: 0, fontSize: 'clamp(1rem, 3.8vw, 1.25rem)', fontWeight: 800, letterSpacing: '0.02em', color: '#fff' }}>
                 AIIMS APEX TRAUMA CENTER
               </h1>
               <span style={{
