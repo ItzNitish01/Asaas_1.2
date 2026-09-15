@@ -112,8 +112,17 @@ export default function App() {
   const lastProcessedIncidentId = useRef(null);
   const initialGracePeriodRef = useRef(true);
 
-  // 3.5s Grace period on fresh load/reload: NEVER auto-open emergency SOS popup on startup
+  // 3.5s Grace period on fresh load/reload: NEVER start with alert or auto-open emergency SOS popup on startup
   useEffect(() => {
+    // Unconditionally ensure clean normal driving state on startup
+    setTelemetry({
+      ...defaultTelemetryState,
+      isEmergencyAlert: false,
+      alertSeverity: 'NONE',
+      alertReason: '',
+      relayHornActive: false,
+      stopButtonPressed: false
+    });
     const timer = setTimeout(() => {
       initialGracePeriodRef.current = false;
     }, 3500);
@@ -139,7 +148,20 @@ export default function App() {
   useEffect(() => {
     const unsubscribe = cloudDb.subscribe((state) => {
       if (state.telemetry) {
-        setTelemetry(prev => ({ ...prev, ...state.telemetry }));
+        setTelemetry(prev => {
+          if (initialGracePeriodRef.current) {
+            return {
+              ...prev,
+              ...state.telemetry,
+              isEmergencyAlert: false,
+              alertSeverity: 'NONE',
+              alertReason: '',
+              relayHornActive: false,
+              stopButtonPressed: false
+            };
+          }
+          return { ...prev, ...state.telemetry };
+        });
       }
       if (state.vehicles && Array.isArray(state.vehicles) && state.vehicles.length > 0) {
         setVehicles(state.vehicles);

@@ -135,6 +135,12 @@ class BackendApiService {
 
       this.wsClient.onopen = () => {
         console.log('[BACKEND-API] WebSocket connected to real-time backend engine at', this.wsBase);
+        if (this.wsPingInterval) clearInterval(this.wsPingInterval);
+        this.wsPingInterval = setInterval(() => {
+          if (this.wsClient && this.wsClient.readyState === WebSocket.OPEN) {
+            try { this.wsClient.send('ping'); } catch (e) {}
+          }
+        }, 25000);
       };
 
       this.wsClient.onmessage = (event) => {
@@ -147,6 +153,10 @@ class BackendApiService {
       };
 
       this.wsClient.onclose = () => {
+        if (this.wsPingInterval) {
+          clearInterval(this.wsPingInterval);
+          this.wsPingInterval = null;
+        }
         this.wsClient = null;
         // Attempt reconnection after 5s
         setTimeout(() => this.connectWebSocket(), 5000);
@@ -173,22 +183,22 @@ class BackendApiService {
   }
 
   async triggerEmergency(incidentData) {
-    return this.post('/v1/incidents/trigger', incidentData);
+    return this.post('/v1/incidents/trigger', incidentData, 8000);
   }
 
   async abortEmergency(incidentId, reason) {
-    return this.post('/v1/incidents/abort', { incidentId, reason });
+    return this.post('/v1/incidents/abort', { incidentId, reason }, 8000);
   }
 
   async getActiveIncident() {
-    return this.get('/v1/incidents/active');
+    return this.get('/v1/incidents/active', 7000);
   }
 
   async getNearestFacilities(lat, lng) {
-    return this.get(`/v1/geospatial/nearest?lat=${lat}&lng=${lng}`);
+    return this.get(`/v1/geospatial/nearest?lat=${lat}&lng=${lng}`, 7000);
   }
 
-  async get(endpoint, timeoutMs = 2500) {
+  async get(endpoint, timeoutMs = 7000) {
     try {
       const res = await fetch(`${this.apiBase}${endpoint}`, {
         signal: AbortSignal.timeout(timeoutMs)
@@ -201,7 +211,7 @@ class BackendApiService {
     }
   }
 
-  async post(endpoint, body, timeoutMs = 2500) {
+  async post(endpoint, body, timeoutMs = 7000) {
     try {
       const res = await fetch(`${this.apiBase}${endpoint}`, {
         method: 'POST',

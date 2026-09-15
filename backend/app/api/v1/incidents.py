@@ -84,23 +84,28 @@ async def run_emergency_pipeline(
     # Road ETA via OSRM (computed concurrently with graceful fallback)
     hosp_route = {"driving_distance_km": 4.2, "eta_minutes": 8, "polyline": None}
     pol_route = {"driving_distance_km": 2.1, "eta_minutes": 4, "polyline": None}
-    hosp_task = get_driving_route_and_eta(lat, lng, nearest_hosp[1].lat, nearest_hosp[1].lng) if nearest_hosp else None
-    pol_task = get_driving_route_and_eta(lat, lng, nearest_pol[1].lat, nearest_pol[1].lng) if nearest_pol else None
 
-    if hosp_task and pol_task:
-        res_hosp, res_pol = await asyncio.gather(hosp_task, pol_task, return_exceptions=True)
-        if isinstance(res_hosp, dict):
-            hosp_route = res_hosp
-        if isinstance(res_pol, dict):
-            pol_route = res_pol
-    elif hosp_task:
-        res_hosp = await hosp_task
-        if isinstance(res_hosp, dict):
-            hosp_route = res_hosp
-    elif pol_task:
-        res_pol = await pol_task
-        if isinstance(res_pol, dict):
-            pol_route = res_pol
+    try:
+        if nearest_hosp and nearest_pol:
+            tasks = [
+                get_driving_route_and_eta(lat, lng, nearest_hosp[1].lat, nearest_hosp[1].lng),
+                get_driving_route_and_eta(lat, lng, nearest_pol[1].lat, nearest_pol[1].lng),
+            ]
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            if len(results) > 0 and isinstance(results[0], dict):
+                hosp_route = results[0]
+            if len(results) > 1 and isinstance(results[1], dict):
+                pol_route = results[1]
+        elif nearest_hosp:
+            res = await get_driving_route_and_eta(lat, lng, nearest_hosp[1].lat, nearest_hosp[1].lng)
+            if isinstance(res, dict):
+                hosp_route = res
+        elif nearest_pol:
+            res = await get_driving_route_and_eta(lat, lng, nearest_pol[1].lat, nearest_pol[1].lng)
+            if isinstance(res, dict):
+                pol_route = res
+    except Exception as exc:
+        log.warning(f"[INCIDENT] Route calculation warning ({exc}); using fallback defaults")
 
     # AI severity if not provided
     if not ai_score:
@@ -229,7 +234,6 @@ async def run_emergency_pipeline(
     await websocket_manager.broadcast("INCIDENT_TRIGGERED", broadcast_payload)
 
     # SMS (async, non-blocking)
-    import asyncio
     if medical:
         result = await db.execute(
             select(EmergencyContact).where(

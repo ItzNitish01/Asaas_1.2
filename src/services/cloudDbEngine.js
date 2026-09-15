@@ -266,16 +266,16 @@ class CloudDbEngine {
       // 1. Fetch active incident from PostgreSQL database (for terminal triage records; isLiveAlert = false)
       const activeRes = await backendApi.getActiveIncident();
       if (activeRes && activeRes.status === 'SUCCESS') {
-        if (activeRes.incident) {
-          const keepLive = Boolean(this.state.telemetry?.isEmergencyAlert);
-          this.applyBackendIncident(activeRes.incident, activeRes.incident.dispatch, keepLive);
-        } else if (this.state.activeIncident && !this.state.telemetry?.isEmergencyAlert) {
-          // Clear stale active incident cached from prior sessions ONLY if no emergency is underway
+        if (activeRes.incident && this.state.telemetry?.isEmergencyAlert) {
+          // Only keep active incident if an emergency was actively triggered locally during this session
+          this.applyBackendIncident(activeRes.incident, activeRes.incident.dispatch, true);
+        } else {
+          // On startup / initial load, always ensure clean normal state (no alert)
           this.state.activeIncident = null;
           this.state.telemetry = {
             ...this.state.telemetry,
             isEmergencyAlert: false,
-            alertSeverity: '',
+            alertSeverity: 'NONE',
             alertReason: '',
             relayHornActive: false,
             stopButtonPressed: false
@@ -485,9 +485,27 @@ class CloudDbEngine {
             }
           } else if (topicSuffix === 'sync_resp') {
             if (payload.state) {
-              this.state.telemetry = { ...this.state.telemetry, ...payload.state.telemetry };
-              this.state.activeIncident = payload.state.activeIncident;
-              this.state.dispatches = payload.state.dispatches;
+              const wasAlert = Boolean(this.state.telemetry?.isEmergencyAlert);
+              const incomingAlert = Boolean(payload.state.telemetry?.isEmergencyAlert);
+
+              this.state.telemetry = {
+                ...this.state.telemetry,
+                speedKmh: payload.state.telemetry?.speedKmh ?? this.state.telemetry.speedKmh,
+                totalGForce: payload.state.telemetry?.totalGForce ?? this.state.telemetry.totalGForce,
+                lat: payload.state.telemetry?.lat ?? this.state.telemetry.lat,
+                lng: payload.state.telemetry?.lng ?? this.state.telemetry.lng,
+                // Do NOT adopt an emergency alert from room sync on startup
+                isEmergencyAlert: wasAlert && incomingAlert,
+                alertSeverity: (wasAlert && incomingAlert) ? (payload.state.telemetry?.alertSeverity || 'NONE') : 'NONE',
+                alertReason: (wasAlert && incomingAlert) ? (payload.state.telemetry?.alertReason || '') : ''
+              };
+
+              if (wasAlert && incomingAlert) {
+                this.state.activeIncident = payload.state.activeIncident;
+                if (payload.state.dispatches) this.state.dispatches = payload.state.dispatches;
+              } else {
+                this.state.activeIncident = null;
+              }
               this.saveToLocalStorage();
               this.notify();
             }

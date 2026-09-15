@@ -18,6 +18,14 @@ from sqlalchemy import select
 from app.core.config import settings
 from app.core.database import get_db_session
 
+import bcrypt
+
+# Compatibility patch for passlib on Python 3.11+ with bcrypt 4.0.0+
+if not hasattr(bcrypt, "__about__"):
+    class _BcryptAbout:
+        __version__ = getattr(bcrypt, "__version__", "4.0.1")
+    bcrypt.__about__ = _BcryptAbout()
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -27,11 +35,21 @@ bearer_scheme = HTTPBearer(auto_error=False)
 # ────────────────────────────────────────────────────────────────────────────
 
 def hash_password(plain: str) -> str:
-    return pwd_context.hash(plain)
+    try:
+        return pwd_context.hash(plain)
+    except Exception:
+        salt = bcrypt.gensalt()
+        return bcrypt.hashpw(plain.encode("utf-8"), salt).decode("utf-8")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    try:
+        return pwd_context.verify(plain, hashed)
+    except Exception:
+        try:
+            return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+        except Exception:
+            return False
 
 
 # ────────────────────────────────────────────────────────────────────────────
